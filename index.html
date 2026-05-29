@@ -5,14 +5,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>업무 툴 포털</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <style>
 :root {
-  --bg:#0d0f14;--sidebar-bg:#111318;--surface:#161922;--surface2:#1e2230;
-  --border:#252933;--border2:#2e3444;
-  --text:#e2e6f0;--muted:#7a8299;--dim:#424a60;
-  --accent:#e8c547;--c-mugu:#60a5fa;--c-music:#f08080;
-  --c-etc:#a78bfa;--c-settle:#4fd1c5;--c-data:#fb923c;
-  --c-analysis:#34d399;--c-schedule:#f472b6;--c-dash:#7dd3fc;
+  --bg:#f4f6f9;--sidebar-bg:#ffffff;--surface:#ffffff;--surface2:#f0f2f5;
+  --border:#e2e6ed;--border2:#d0d5de;
+  --text:#1a1f2e;--muted:#5a6478;--dim:#9aa0b0;
+  --accent:#1a6fd4;--c-mugu:#2563eb;--c-music:#dc2626;
+  --c-etc:#7c3aed;--c-settle:#0891b2;--c-data:#ea580c;
+  --c-analysis:#16a34a;--c-schedule:#db2777;--c-dash:#0369a1;
 }
 *{margin:0;padding:0;box-sizing:border-box;}
 body{display:flex;flex-direction:column;height:100dvh;background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-serif;overflow:hidden;}
@@ -322,7 +323,7 @@ let recentIds=['t1','t2','t3'];
 let currentNav='dash-inv';
 
 const SUPA_URL='https://ftfpicvwprpcuhstteas.supabase.co';
-const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ0ZnBpY3Z3cHJwY3Voc3R0ZWFzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwNDg2NTMsImV4cCI6MjA5NTYyNDY1M30.6G9NwSmzSjSX1ZIu_h0TeoNDiRuQ6kOtrQBCu0R1oMk'; // Supabase → API Keys → anon public 키 입력
+const SUPA_KEY='YOUR_ANON_KEY'; // Supabase → API Keys → anon public 키 입력
 
 let dashInvData={branch:[],genre:[],supplier:[]};
 let dashCalData=null;
@@ -465,8 +466,20 @@ function getMonthCells(){
 }
 
 // ── 대시보드 재고 ──
+// ── 차트 관리 ──
+let activeCharts=[];
+function destroyCharts(){activeCharts.forEach(c=>c.destroy());activeCharts=[];}
+function mkChart(id,config){
+  const el=document.getElementById(id);
+  if(!el)return;
+  activeCharts.push(new Chart(el,config));
+}
+
+const CHART_COLORS=['#1a6fd4','#16a34a','#dc2626','#ea580c','#7c3aed','#0891b2','#db2777','#ca8a04'];
+
 function renderDashInv(){
   if(currentNav!=='dash-inv')return;
+  destroyCharts();
   const el=document.getElementById('mainArea');
 
   let html=`<div style="animation:fadeUp .3s ease">
@@ -477,10 +490,9 @@ function renderDashInv(){
 
   if(dashInvLoading){html+=`<div class="load-box"><div class="spinner"></div><div>Supabase에서 재고 데이터를 불러오는 중...</div></div></div>`;el.innerHTML=html;return;}
 
-  // 탭 버튼
   html+=`<div style="display:flex;gap:6px;margin-bottom:18px;border-bottom:1px solid var(--border);padding-bottom:12px;">
     ${[['branch','영업점별'],['genre','장르별'],['supplier','매입처별']].map(([k,l])=>
-      `<button onclick="invTab='${k}';renderDashInv()" style="padding:7px 16px;border-radius:7px;font-size:12px;font-family:'Noto Sans KR',sans-serif;cursor:pointer;border:1px solid ${invTab===k?'var(--c-dash)':'var(--border2)'};background:${invTab===k?'rgba(125,211,252,.12)':'transparent'};color:${invTab===k?'var(--c-dash)':'var(--muted)'};font-weight:${invTab===k?700:400}">${l}</button>`
+      `<button onclick="invTab='${k}';renderDashInv()" style="padding:7px 16px;border-radius:7px;font-size:12px;font-family:'Noto Sans KR',sans-serif;cursor:pointer;border:1px solid ${invTab===k?'var(--c-dash)':'var(--border2)'};background:${invTab===k?'rgba(3,105,161,.1)':'transparent'};color:${invTab===k?'var(--c-dash)':'var(--muted)'};font-weight:${invTab===k?700:400}">${l}</button>`
     ).join('')}
   </div>`;
 
@@ -490,6 +502,13 @@ function renderDashInv(){
 
   html+=`</div>`;
   el.innerHTML=html;
+
+  // 차트 생성 (DOM 렌더링 후)
+  setTimeout(()=>{
+    if(invTab==='branch') createBranchCharts();
+    else if(invTab==='genre') createGenreCharts();
+    else createSupplierCharts();
+  },50);
 }
 
 function renderBranchTab(){
@@ -522,12 +541,22 @@ function renderBranchTab(){
     <div class="sum-card" style="border-top:2px solid var(--c-analysis)"><div class="sum-num" style="color:var(--c-analysis)">${fmt(totalQty)}개</div><div class="sum-label">전체 수량</div></div>
     <div class="sum-card" style="border-top:2px solid var(--c-dash)"><div class="sum-num" style="color:var(--c-dash)">${filtered.length}개</div><div class="sum-label">영업점 수</div></div>
   </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px;">
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;">
+      <div style="font-size:12px;font-weight:600;color:var(--muted);margin-bottom:12px;">구분A 재고금액 비율</div>
+      <canvas id="chartTypeA" height="200"></canvas>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;">
+      <div style="font-size:12px;font-weight:600;color:var(--muted);margin-bottom:12px;">영업점 Top 10 재고금액</div>
+      <canvas id="chartBranch" height="200"></canvas>
+    </div>
+  </div>
   <div class="filter-row">
     <span class="filter-label">구분A</span>
-    ${typeAs.map(t=>`<button class="f-chip ${invTypeA===t?'active':''}" style="${invTypeA===t?'background:var(--accent);border-color:var(--accent);color:#0d0f14':''}" onclick="invTypeA='${t}';renderDashInv()">${t}</button>`).join('')}
+    ${typeAs.map(t=>`<button class="f-chip ${invTypeA===t?'active':''}" style="${invTypeA===t?'background:var(--accent);border-color:var(--accent);color:#fff':''}" onclick="invTypeA='${t}';renderDashInv()">${t}</button>`).join('')}
     <div class="filter-sep"></div>
     <span class="filter-label">구분B</span>
-    ${typeBs.map(t=>`<button class="f-chip ${invTypeB===t?'active':''}" style="${invTypeB===t?'background:var(--c-dash);border-color:var(--c-dash);color:#0d0f14':''}" onclick="invTypeB='${t}';renderDashInv()">${t}</button>`).join('')}
+    ${typeBs.map(t=>`<button class="f-chip ${invTypeB===t?'active':''}" style="${invTypeB===t?'background:var(--c-dash);border-color:var(--c-dash);color:#fff':''}" onclick="invTypeB='${t}';renderDashInv()">${t}</button>`).join('')}
   </div>
   <div class="table-wrap"><table>
     <thead><tr>
@@ -543,12 +572,12 @@ function renderBranchTab(){
     const wkColor=diffColor(d.amount,prev?.amount);
     const clDiff=diffStr(d.amount,close?.amount);
     const clColor=diffColor(d.amount,close?.amount);
-    html+=`<tr style="background:${i%2?'rgba(30,34,48,.4)':'transparent'}">
+    html+=`<tr style="background:${i%2?'var(--surface2)':'transparent'}">
       <td style="font-weight:500">${d.branch}</td>
-      <td><span style="font-size:10px;padding:2px 8px;border-radius:10px;background:rgba(125,211,252,.1);color:var(--c-dash)">${d.type_a||'-'}</span></td>
-      <td><span style="font-size:10px;padding:2px 8px;border-radius:10px;background:rgba(167,139,250,.1);color:var(--c-etc)">${d.type_b||'-'}</span></td>
+      <td><span style="font-size:10px;padding:2px 8px;border-radius:10px;background:rgba(3,105,161,.08);color:var(--c-dash)">${d.type_a||'-'}</span></td>
+      <td><span style="font-size:10px;padding:2px 8px;border-radius:10px;background:rgba(124,58,237,.08);color:var(--c-etc)">${d.type_b||'-'}</span></td>
       <td style="font-family:'DM Mono',monospace;text-align:right">${fmt(d.quantity)}</td>
-      <td style="font-family:'DM Mono',monospace;text-align:right;color:var(--accent)">${fmt(d.amount)}원</td>
+      <td style="font-family:'DM Mono',monospace;text-align:right;color:var(--accent);font-weight:600">${fmt(d.amount)}원</td>
       <td style="font-family:'DM Mono',monospace;text-align:right;color:${clColor};font-size:11px">${clDiff}</td>
       <td style="font-family:'DM Mono',monospace;text-align:right;color:${wkColor};font-size:11px">${wkDiff}</td>
     </tr>`;
@@ -559,11 +588,32 @@ function renderBranchTab(){
   html+=`</tbody><tfoot><tr>
     <td colspan="3" style="color:var(--muted)">합계</td>
     <td style="font-family:'DM Mono',monospace;text-align:right">${fmt(totalQty)}</td>
-    <td style="font-family:'DM Mono',monospace;text-align:right;color:var(--accent)">${fmt(totalAmt)}원</td>
+    <td style="font-family:'DM Mono',monospace;text-align:right;color:var(--accent);font-weight:600">${fmt(totalAmt)}원</td>
     <td style="font-family:'DM Mono',monospace;text-align:right;color:${diffColor(totalAmt,closeTotal)};font-size:11px">${diffStr(totalAmt,closeTotal||null)}</td>
     <td style="font-family:'DM Mono',monospace;text-align:right;color:${diffColor(totalAmt,prevTotal)};font-size:11px">${diffStr(totalAmt,prevTotal||null)}</td>
   </tr></tfoot></table></div>`;
   return html;
+}
+
+function createBranchCharts(){
+  const data=dashInvData.branch||[];
+  const latest=getLatestDate(data);
+  const filtered=data.filter(d=>d.date===latest&&(invTypeA==='전체'||d.type_a===invTypeA)&&(invTypeB==='전체'||d.type_b===invTypeB));
+
+  // 구분A 도넛 차트
+  const typeAMap={};
+  filtered.forEach(d=>{const k=d.type_a||'기타';typeAMap[k]=(typeAMap[k]||0)+(d.amount||0);});
+  mkChart('chartTypeA',{type:'doughnut',data:{
+    labels:Object.keys(typeAMap),
+    datasets:[{data:Object.values(typeAMap),backgroundColor:CHART_COLORS,borderWidth:2,borderColor:'#fff'}]
+  },options:{responsive:true,plugins:{legend:{position:'bottom',labels:{font:{size:11},padding:10}},tooltip:{callbacks:{label:ctx=>`${ctx.label}: ${fmt(ctx.raw)}원`}}}}});
+
+  // 영업점 Top10 가로 막대 차트
+  const top10=[...filtered].sort((a,b)=>(b.amount||0)-(a.amount||0)).slice(0,10);
+  mkChart('chartBranch',{type:'bar',data:{
+    labels:top10.map(d=>d.branch),
+    datasets:[{label:'재고금액',data:top10.map(d=>d.amount||0),backgroundColor:'rgba(26,111,212,.15)',borderColor:'#1a6fd4',borderWidth:1.5,borderRadius:4}]
+  },options:{indexAxis:'y',responsive:true,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${fmt(ctx.raw)}원`}}},scales:{x:{ticks:{callback:v=>fmt(v),font:{size:9}},grid:{color:'rgba(0,0,0,.05)'}},y:{ticks:{font:{size:10}}}}}});
 }
 
 function renderGenreTab(){
@@ -577,10 +627,22 @@ function renderGenreTab(){
   const prevData=data.filter(d=>d.date===prevWeek);
   const closeData=data.filter(d=>d.date===closing);
   const genres=[...new Set(latestData.map(d=>d.genre))].sort();
+  const genreAmts=genres.map(g=>latestData.filter(d=>d.genre===g).reduce((s,d)=>s+(d.amount||0),0));
+  const genreCloseAmts=genres.map(g=>closeData.filter(d=>d.genre===g).reduce((s,d)=>s+(d.amount||0),0));
 
   let html=`<div class="meta-row">
     <span class="meta-tag">📅 기준일: ${latest||'-'}</span>
     ${closing?`<span class="meta-tag">📌 전월마감: ${closing}</span>`:''}
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px;">
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;">
+      <div style="font-size:12px;font-weight:600;color:var(--muted);margin-bottom:12px;">장르별 재고금액 비율</div>
+      <canvas id="chartGenrePie" height="200"></canvas>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;">
+      <div style="font-size:12px;font-weight:600;color:var(--muted);margin-bottom:12px;">장르별 전월마감 대비</div>
+      <canvas id="chartGenreBar" height="200"></canvas>
+    </div>
   </div>
   <div class="table-wrap"><table>
     <thead><tr>
@@ -594,16 +656,40 @@ function renderGenreTab(){
     const amt=rows.reduce((s,d)=>s+(d.amount||0),0);
     const prevAmt=prevData.filter(d=>d.genre===g).reduce((s,d)=>s+(d.amount||0),0);
     const closeAmt=closeData.filter(d=>d.genre===g).reduce((s,d)=>s+(d.amount||0),0);
-    html+=`<tr style="background:${i%2?'rgba(30,34,48,.4)':'transparent'}">
+    html+=`<tr style="background:${i%2?'var(--surface2)':'transparent'}">
       <td style="font-weight:500">${g}</td>
       <td style="font-family:'DM Mono',monospace;text-align:right">${fmt(qty)}</td>
-      <td style="font-family:'DM Mono',monospace;text-align:right;color:var(--accent)">${fmt(amt)}원</td>
+      <td style="font-family:'DM Mono',monospace;text-align:right;color:var(--accent);font-weight:600">${fmt(amt)}원</td>
       <td style="font-family:'DM Mono',monospace;text-align:right;color:${diffColor(amt,closeAmt||null)};font-size:11px">${diffStr(amt,closeAmt||null)}</td>
       <td style="font-family:'DM Mono',monospace;text-align:right;color:${diffColor(amt,prevAmt||null)};font-size:11px">${diffStr(amt,prevAmt||null)}</td>
     </tr>`;
   });
   html+=`</tbody></table></div>`;
   return html;
+}
+
+function createGenreCharts(){
+  const data=dashInvData.genre||[];
+  const latest=getLatestDate(data);
+  const closing=getLatestClosingDate(data,latest);
+  const latestData=data.filter(d=>d.date===latest);
+  const closeData=data.filter(d=>d.date===closing);
+  const genres=[...new Set(latestData.map(d=>d.genre))].sort();
+  const amts=genres.map(g=>latestData.filter(d=>d.genre===g).reduce((s,d)=>s+(d.amount||0),0));
+  const closeAmts=genres.map(g=>closeData.filter(d=>d.genre===g).reduce((s,d)=>s+(d.amount||0),0));
+
+  mkChart('chartGenrePie',{type:'doughnut',data:{
+    labels:genres,
+    datasets:[{data:amts,backgroundColor:CHART_COLORS,borderWidth:2,borderColor:'#fff'}]
+  },options:{responsive:true,plugins:{legend:{position:'bottom',labels:{font:{size:11},padding:10}},tooltip:{callbacks:{label:ctx=>`${ctx.label}: ${fmt(ctx.raw)}원`}}}}});
+
+  mkChart('chartGenreBar',{type:'bar',data:{
+    labels:genres,
+    datasets:[
+      {label:'현재',data:amts,backgroundColor:'rgba(26,111,212,.2)',borderColor:'#1a6fd4',borderWidth:1.5,borderRadius:4},
+      {label:'전월마감',data:closeAmts,backgroundColor:'rgba(220,38,38,.15)',borderColor:'#dc2626',borderWidth:1.5,borderRadius:4}
+    ]
+  },options:{responsive:true,plugins:{legend:{position:'bottom',labels:{font:{size:11}}},tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${fmt(ctx.raw)}원`}}},scales:{y:{ticks:{callback:v=>fmt(v),font:{size:9}},grid:{color:'rgba(0,0,0,.05)'}},x:{ticks:{font:{size:11}}}}}});
 }
 
 function renderSupplierTab(){
@@ -621,6 +707,10 @@ function renderSupplierTab(){
     <span class="meta-tag">📅 기준일: ${latest||'-'}</span>
     ${closing?`<span class="meta-tag">📌 전월마감: ${closing}</span>`:''}
   </div>
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:18px;">
+    <div style="font-size:12px;font-weight:600;color:var(--muted);margin-bottom:12px;">매입처 Top 10 재고금액</div>
+    <canvas id="chartSupplier" height="120"></canvas>
+  </div>
   <div class="table-wrap"><table>
     <thead><tr>
       <th>코드</th><th>매입처명</th>
@@ -628,20 +718,30 @@ function renderSupplierTab(){
       <th style="text-align:right">전월마감比</th><th style="text-align:right">전주比</th>
     </tr></thead><tbody>`;
 
-  latestData.forEach((d,i)=>{
+  latestData.sort((a,b)=>(b.amount||0)-(a.amount||0)).forEach((d,i)=>{
     const prev=prevData.find(p=>p.supplier_code===d.supplier_code&&p.supplier_name===d.supplier_name);
     const close=closeData.find(c=>c.supplier_code===d.supplier_code&&c.supplier_name===d.supplier_name);
-    html+=`<tr style="background:${i%2?'rgba(30,34,48,.4)':'transparent'}">
+    html+=`<tr style="background:${i%2?'var(--surface2)':'transparent'}">
       <td style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted)">${d.supplier_code||'-'}</td>
       <td style="font-weight:500">${d.supplier_name}</td>
       <td style="font-family:'DM Mono',monospace;text-align:right">${fmt(d.quantity)}</td>
-      <td style="font-family:'DM Mono',monospace;text-align:right;color:var(--accent)">${fmt(d.amount)}원</td>
+      <td style="font-family:'DM Mono',monospace;text-align:right;color:var(--accent);font-weight:600">${fmt(d.amount)}원</td>
       <td style="font-family:'DM Mono',monospace;text-align:right;color:${diffColor(d.amount,close?.amount)};font-size:11px">${diffStr(d.amount,close?.amount)}</td>
       <td style="font-family:'DM Mono',monospace;text-align:right;color:${diffColor(d.amount,prev?.amount)};font-size:11px">${diffStr(d.amount,prev?.amount)}</td>
     </tr>`;
   });
   html+=`</tbody></table></div>`;
   return html;
+}
+
+function createSupplierCharts(){
+  const data=dashInvData.supplier||[];
+  const latest=getLatestDate(data);
+  const top10=[...data.filter(d=>d.date===latest)].sort((a,b)=>(b.amount||0)-(a.amount||0)).slice(0,10);
+  mkChart('chartSupplier',{type:'bar',data:{
+    labels:top10.map(d=>d.supplier_name),
+    datasets:[{label:'재고금액',data:top10.map(d=>d.amount||0),backgroundColor:CHART_COLORS.map(c=>c+'33'),borderColor:CHART_COLORS,borderWidth:1.5,borderRadius:4}]
+  },options:{indexAxis:'y',responsive:true,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${fmt(ctx.raw)}원`}}},scales:{x:{ticks:{callback:v=>fmt(v),font:{size:9}},grid:{color:'rgba(0,0,0,.05)'}},y:{ticks:{font:{size:10}}}}}});
 }
 
 // ── 대시보드 캘린더 ──
