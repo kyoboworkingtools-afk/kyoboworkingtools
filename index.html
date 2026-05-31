@@ -305,7 +305,7 @@ tfoot td{background:var(--surface2);font-weight:700;font-size:11px;}
       <label>이메일</label>
       <div class="auth-field-row">
         <input type="text" id="signEmail" placeholder="아이디 입력">
-        <span class="domain">@kyobo.com</span>
+        <span class="domain">@kyobobook.com</span>
       </div>
     </div>
     <div class="auth-field">
@@ -562,7 +562,7 @@ async function doSignup(){
   if(pw.length<8){ errEl.textContent='비밀번호는 8자 이상이어야 합니다.'; return; }
   if(pw!==pw2){ errEl.textContent='비밀번호가 일치하지 않습니다.'; return; }
   errEl.textContent=''; btn.disabled=true; btn.textContent='가입 중...';
-  const email = emailId+'@kyobo.com';
+  const email = emailId+'@kyobobook.com';
   // 사번 중복 확인
   const {data:dup} = await _supa.from('users').select('id').eq('employee_id',eid).single();
   if(dup){ errEl.textContent='이미 사용 중인 사번입니다.'; btn.disabled=false; btn.textContent='회원가입'; return; }
