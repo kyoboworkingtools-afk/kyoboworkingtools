@@ -7,337 +7,152 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #f5f6fa;
-    --surface: #ffffff;
-    --surface2: #f0f1f6;
-    --border: #e2e4ed;
-    --border2: #d0d3e0;
-    --text: #1a1d2e;
-    --text2: #5a5f7a;
-    --text3: #9095b0;
-    --accent: #4361ee;
-    --accent2: #3a0ca3;
-    --accent-light: #eef0fd;
-    --green: #2db87a;
-    --green-light: #e8f8f1;
-    --red: #e84855;
-    --red-light: #fdeef0;
-    --orange: #f77f00;
-    --orange-light: #fff4e6;
-    --shadow: 0 2px 12px rgba(67,97,238,0.08);
-    --shadow2: 0 4px 24px rgba(67,97,238,0.13);
-    --radius: 12px;
-    --radius2: 8px;
+    --bg:#f5f6fa;--surface:#fff;--surface2:#f0f1f6;--border:#e2e4ed;--border2:#d0d3e0;
+    --text:#1a1d2e;--text2:#5a5f7a;--text3:#9095b0;
+    --accent:#4361ee;--accent2:#3a0ca3;--accent-light:#eef0fd;
+    --green:#2db87a;--green-light:#e8f8f1;--red:#e84855;--red-light:#fdeef0;
+    --orange:#f77f00;--orange-light:#fff4e6;
+    --shadow:0 2px 12px rgba(67,97,238,0.08);--radius:12px;--radius2:8px;
   }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    font-family: 'Noto Sans KR', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    font-size: 14px;
-  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;}
 
-  .header {
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    padding: 0 32px;
-    height: 60px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    box-shadow: 0 1px 8px rgba(0,0,0,0.06);
-  }
-  .header-left { display: flex; align-items: center; gap: 12px; }
-  .header-logo {
-    width: 32px; height: 32px;
-    background: linear-gradient(135deg, var(--accent), var(--accent2));
-    border-radius: 8px;
-    display: flex; align-items: center; justify-content: center;
-    color: #fff; font-size: 16px;
-  }
-  .header-title { font-size: 16px; font-weight: 700; color: var(--text); }
-  .header-sub { font-size: 12px; color: var(--text3); margin-left: 4px; }
+  .header{background:var(--surface);border-bottom:1px solid var(--border);padding:0 32px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 1px 8px rgba(0,0,0,0.06);}
+  .header-left{display:flex;align-items:center;gap:12px;}
+  .header-logo{width:32px;height:32px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px;}
+  .header-title{font-size:16px;font-weight:700;}
+  .header-sub{font-size:12px;color:var(--text3);margin-left:4px;}
+  .db-badge{display:flex;align-items:center;gap:5px;font-size:12px;}
+  .db-dot{width:7px;height:7px;border-radius:50%;background:var(--text3);}
 
-  .container { max-width: 1280px; margin: 0 auto; padding: 28px 32px; }
-  .layout { display: grid; grid-template-columns: 1fr 380px; gap: 24px; align-items: start; }
+  .container{max-width:1280px;margin:0 auto;padding:28px 32px;}
+  .layout{display:grid;grid-template-columns:1fr 380px;gap:24px;align-items:start;}
 
-  .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
-  .section-title { font-size: 13px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 0.06em; }
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;}
+  .card-header{padding:18px 20px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
+  .card-icon{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
+  .card-icon.blue{background:var(--accent-light);}
+  .card-title{font-size:14px;font-weight:600;}
+  .card-desc{font-size:12px;color:var(--text3);margin-top:1px;}
+  .card-body{padding:18px 20px;}
 
-  .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    box-shadow: var(--shadow);
-    overflow: hidden;
-  }
-  .card-header {
-    padding: 18px 20px 14px;
-    border-bottom: 1px solid var(--border);
-    display: flex; align-items: center; gap: 10px;
-  }
-  .card-header-icon {
-    width: 30px; height: 30px;
-    border-radius: 8px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 14px;
-    flex-shrink: 0;
-  }
-  .card-header-icon.blue { background: var(--accent-light); color: var(--accent); }
-  .card-header-icon.green { background: var(--green-light); color: var(--green); }
-  .card-header-icon.orange { background: var(--orange-light); color: var(--orange); }
-  .card-title { font-size: 14px; font-weight: 600; }
-  .card-desc { font-size: 12px; color: var(--text3); margin-top: 1px; }
-  .card-body { padding: 18px 20px; }
+  .rec-status{display:flex;align-items:center;gap:10px;padding:14px 16px;background:var(--surface2);border-radius:var(--radius2);margin-bottom:16px;border:1px solid var(--border);}
+  .rec-dot{width:12px;height:12px;border-radius:50%;background:var(--text3);flex-shrink:0;transition:background 0.3s;}
+  .rec-dot.recording{background:var(--red);animation:pulse 1s infinite;}
+  .rec-dot.done{background:var(--green);}
+  @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.4;transform:scale(0.8)}}
+  .rec-label{font-size:13px;font-weight:600;}
+  .rec-time{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text3);}
 
-  .rec-status {
-    display: flex; align-items: center; gap: 10px;
-    padding: 12px 16px;
-    background: var(--surface2);
-    border-radius: var(--radius2);
-    margin-bottom: 14px;
-    border: 1px solid var(--border);
-  }
-  .rec-dot {
-    width: 10px; height: 10px; border-radius: 50%;
-    background: var(--text3);
-    transition: background 0.3s;
-    flex-shrink: 0;
-  }
-  .rec-dot.recording { background: var(--red); animation: pulse-dot 1s infinite; }
-  .rec-dot.paused { background: var(--orange); }
-  @keyframes pulse-dot {
-    0%,100% { opacity:1; transform:scale(1); }
-    50% { opacity:0.4; transform:scale(0.8); }
-  }
-  .rec-info { flex: 1; }
-  .rec-label { font-size: 12px; font-weight: 600; color: var(--text); }
-  .rec-time { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text3); }
-  .rec-controls { display: flex; gap: 8px; margin-bottom: 14px; }
-  .btn {
-    display: inline-flex; align-items: center; gap: 6px;
-    padding: 8px 16px; border-radius: var(--radius2);
-    font-size: 13px; font-weight: 500;
-    border: none; cursor: pointer; transition: all 0.18s;
-    font-family: 'Noto Sans KR', sans-serif;
-  }
-  .btn:disabled { opacity: 0.45; cursor: not-allowed; }
-  .btn-primary { background: var(--accent); color: #fff; }
-  .btn-primary:hover:not(:disabled) { background: #3150d6; box-shadow: 0 2px 10px rgba(67,97,238,0.3); }
-  .btn-danger { background: var(--red); color: #fff; }
-  .btn-danger:hover:not(:disabled) { background: #cc3840; }
-  .btn-outline { background: var(--surface); color: var(--text); border: 1px solid var(--border2); }
-  .btn-outline:hover:not(:disabled) { background: var(--surface2); border-color: var(--accent); color: var(--accent); }
-  .btn-green { background: var(--green); color: #fff; }
-  .btn-green:hover:not(:disabled) { background: #24a068; }
-  .btn-sm { padding: 5px 12px; font-size: 12px; }
+  .rec-controls{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;}
 
-  .transcript-area {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: var(--radius2);
-    padding: 12px;
-    min-height: 120px; max-height: 200px;
-    overflow-y: auto;
-    font-size: 13px;
-    line-height: 1.7;
-    color: var(--text);
-    resize: none;
-    white-space: pre-wrap;
-    margin-bottom: 14px;
-  }
-  .transcript-area:focus { outline: none; border-color: var(--accent); }
-  .transcript-placeholder { color: var(--text3); font-style: italic; }
+  .btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:var(--radius2);font-size:13px;font-weight:500;border:none;cursor:pointer;transition:all 0.18s;font-family:'Noto Sans KR',sans-serif;}
+  .btn:disabled{opacity:0.45;cursor:not-allowed;}
+  .btn-primary{background:var(--accent);color:#fff;}
+  .btn-primary:hover:not(:disabled){background:#3150d6;box-shadow:0 2px 10px rgba(67,97,238,0.3);}
+  .btn-danger{background:var(--red);color:#fff;}
+  .btn-danger:hover:not(:disabled){background:#cc3840;}
+  .btn-outline{background:var(--surface);color:var(--text);border:1px solid var(--border2);}
+  .btn-outline:hover:not(:disabled){border-color:var(--accent);color:var(--accent);}
+  .btn-green{background:var(--green);color:#fff;}
+  .btn-green:hover:not(:disabled){background:#24a068;}
+  .btn-sm{padding:5px 12px;font-size:12px;}
 
-  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
-  .form-group { display: flex; flex-direction: column; gap: 5px; }
-  .form-group.full { grid-column: 1/-1; }
-  .form-label { font-size: 12px; font-weight: 500; color: var(--text2); }
-  .form-input {
-    border: 1px solid var(--border2);
-    border-radius: var(--radius2);
-    padding: 8px 11px;
-    font-size: 13px;
-    font-family: 'Noto Sans KR', sans-serif;
-    color: var(--text);
-    background: var(--surface);
-    transition: border 0.15s;
-  }
-  .form-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(67,97,238,0.1); }
-  .form-textarea {
-    resize: vertical; min-height: 80px; line-height: 1.6;
-  }
+  /* 분석 진행 상태 */
+  .analysis-box{background:var(--accent-light);border:1px solid rgba(67,97,238,0.2);border-radius:var(--radius2);padding:16px;margin-bottom:16px;display:none;}
+  .analysis-box.show{display:block;}
+  .analysis-step{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--accent);font-weight:500;}
+  .analysis-progress{height:4px;background:rgba(67,97,238,0.15);border-radius:4px;margin-top:10px;overflow:hidden;}
+  .analysis-bar{height:100%;background:var(--accent);border-radius:4px;width:0%;transition:width 0.5s ease;}
 
-  .gemini-status {
-    display: flex; align-items: center; gap: 8px;
-    padding: 10px 14px;
-    border-radius: var(--radius2);
-    margin-bottom: 12px;
-    font-size: 12px;
-    font-weight: 500;
-  }
-  .gemini-status.idle { background: var(--surface2); color: var(--text3); border: 1px solid var(--border); }
-  .gemini-status.loading { background: var(--accent-light); color: var(--accent); border: 1px solid rgba(67,97,238,0.2); }
-  .gemini-status.done { background: var(--green-light); color: var(--green); border: 1px solid rgba(45,184,122,0.2); }
-  .gemini-status.error { background: var(--red-light); color: var(--red); border: 1px solid rgba(232,72,85,0.2); }
-  .spin { animation: spin 1s linear infinite; display: inline-block; }
-  @keyframes spin { to { transform: rotate(360deg); } }
+  /* 녹음 완료 후 텍스트 표시 */
+  .transcript-box{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius2);padding:12px;min-height:100px;max-height:200px;overflow-y:auto;font-size:13px;line-height:1.7;margin-bottom:14px;display:none;}
+  .transcript-box.show{display:block;}
+  .transcript-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.07em;color:var(--text3);margin-bottom:6px;}
 
-  .list-toolbar {
-    display: flex; gap: 8px; margin-bottom: 14px; align-items: center;
-  }
-  .search-box {
-    flex: 1;
-    position: relative;
-  }
-  .search-box input {
-    width: 100%;
-    padding: 8px 11px 8px 34px;
-    border: 1px solid var(--border2);
-    border-radius: var(--radius2);
-    font-size: 13px;
-    background: var(--surface);
-    font-family: 'Noto Sans KR', sans-serif;
-    color: var(--text);
-    transition: border 0.15s;
-  }
-  .search-box input:focus { outline: none; border-color: var(--accent); }
-  .search-icon {
-    position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
-    color: var(--text3); font-size: 14px;
-  }
-  .meeting-list { display: flex; flex-direction: column; gap: 8px; }
-  .meeting-item {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius2);
-    padding: 14px 16px;
-    cursor: pointer;
-    transition: all 0.15s;
-    position: relative;
-  }
-  .meeting-item:hover { border-color: var(--accent); box-shadow: 0 2px 12px rgba(67,97,238,0.1); transform: translateY(-1px); }
-  .meeting-item.active { border-color: var(--accent); background: var(--accent-light); }
-  .meeting-item-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
-  .meeting-item-title { font-size: 13px; font-weight: 600; color: var(--text); flex: 1; line-height: 1.4; }
-  .meeting-item-date { font-size: 11px; color: var(--text3); white-space: nowrap; font-family: 'JetBrains Mono', monospace; }
-  .meeting-item-meta { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
-  .badge {
-    display: inline-flex; align-items: center; gap: 3px;
-    padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 500;
-  }
-  .badge-blue { background: var(--accent-light); color: var(--accent); }
-  .badge-green { background: var(--green-light); color: var(--green); }
-  .meeting-item-summary { font-size: 12px; color: var(--text2); line-height: 1.5; margin-top: 6px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  /* 리스트 */
+  .list-toolbar{display:flex;gap:8px;margin-bottom:14px;}
+  .search-box{flex:1;position:relative;}
+  .search-box input{width:100%;padding:8px 11px 8px 34px;border:1px solid var(--border2);border-radius:var(--radius2);font-size:13px;background:var(--surface);font-family:'Noto Sans KR',sans-serif;}
+  .search-box input:focus{outline:none;border-color:var(--accent);}
+  .search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text3);}
+  .form-input{border:1px solid var(--border2);border-radius:var(--radius2);padding:8px 11px;font-size:13px;font-family:'Noto Sans KR',sans-serif;background:var(--surface);}
 
-  .detail-panel { display: flex; flex-direction: column; gap: 16px; }
-  .detail-empty {
-    background: var(--surface);
-    border: 1px dashed var(--border2);
-    border-radius: var(--radius);
-    padding: 48px 32px;
-    text-align: center;
-    color: var(--text3);
-  }
-  .detail-empty-icon { font-size: 36px; margin-bottom: 10px; }
-  .detail-empty-text { font-size: 13px; }
-  .detail-section { margin-bottom: 14px; }
-  .detail-section-label {
-    font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em;
-    color: var(--text3); margin-bottom: 6px;
-    display: flex; align-items: center; gap: 5px;
-  }
-  .detail-content {
-    font-size: 13px; color: var(--text); line-height: 1.7;
-    background: var(--surface2);
-    border-radius: var(--radius2);
-    padding: 10px 12px;
-  }
-  .action-list { list-style: none; display: flex; flex-direction: column; gap: 5px; }
-  .action-item {
-    display: flex; align-items: flex-start; gap: 8px;
-    font-size: 13px; color: var(--text); line-height: 1.5;
-  }
-  .action-item::before {
-    content: '→';
-    color: var(--accent); font-weight: 600; flex-shrink: 0; margin-top: 1px;
-  }
-  .decision-list { list-style: none; display: flex; flex-direction: column; gap: 5px; }
-  .decision-item {
-    display: flex; align-items: flex-start; gap: 8px;
-    font-size: 13px; color: var(--text); line-height: 1.5;
-  }
-  .decision-item::before {
-    content: '✓';
-    color: var(--green); font-weight: 600; flex-shrink: 0; margin-top: 1px;
-  }
-  .attendee-chips { display: flex; flex-wrap: wrap; gap: 5px; }
-  .chip {
-    background: var(--accent-light); color: var(--accent);
-    border-radius: 20px; padding: 3px 10px; font-size: 12px; font-weight: 500;
-  }
-  .detail-meta { display: flex; gap: 10px; align-items: center; }
-  .detail-meta-item { font-size: 12px; color: var(--text3); }
+  .meeting-list{display:flex;flex-direction:column;gap:8px;}
+  .meeting-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius2);padding:14px 16px;cursor:pointer;transition:all 0.15s;}
+  .meeting-item:hover{border-color:var(--accent);box-shadow:0 2px 12px rgba(67,97,238,0.1);transform:translateY(-1px);}
+  .meeting-item.active{border-color:var(--accent);background:var(--accent-light);}
+  .meeting-item-header{display:flex;justify-content:space-between;gap:8px;margin-bottom:6px;}
+  .meeting-item-title{font-size:13px;font-weight:600;flex:1;line-height:1.4;}
+  .meeting-item-date{font-size:11px;color:var(--text3);font-family:'JetBrains Mono',monospace;white-space:nowrap;}
+  .meeting-item-meta{display:flex;gap:6px;flex-wrap:wrap;}
+  .badge{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:500;}
+  .badge-blue{background:var(--accent-light);color:var(--accent);}
+  .badge-green{background:var(--green-light);color:var(--green);}
+  .meeting-item-summary{font-size:12px;color:var(--text2);line-height:1.5;margin-top:6px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
 
-  .list-empty {
-    text-align: center; padding: 40px 20px; color: var(--text3);
-    font-size: 13px;
-  }
-  .list-empty-icon { font-size: 32px; margin-bottom: 8px; }
+  .detail-panel{display:flex;flex-direction:column;gap:16px;}
+  .section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+  .section-title{font-size:13px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.06em;}
+  .detail-empty{background:var(--surface);border:1px dashed var(--border2);border-radius:var(--radius);padding:48px 32px;text-align:center;color:var(--text3);}
+  .detail-empty-icon{font-size:36px;margin-bottom:10px;}
+  .detail-content-box{background:var(--surface2);border-radius:var(--radius2);padding:10px 12px;font-size:13px;line-height:1.7;}
+  .detail-section{margin-bottom:14px;}
+  .detail-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.07em;color:var(--text3);margin-bottom:6px;}
+  .chip{background:var(--accent-light);color:var(--accent);border-radius:20px;padding:3px 10px;font-size:12px;font-weight:500;display:inline-block;margin:2px;}
+  .divider{height:1px;background:var(--border);margin:14px 0;}
+  .action-item{display:flex;gap:8px;font-size:13px;line-height:1.5;padding:3px 0;}
+  .action-item::before{content:'→';color:var(--accent);font-weight:600;flex-shrink:0;}
+  .decision-item{display:flex;gap:8px;font-size:13px;line-height:1.5;padding:3px 0;}
+  .decision-item::before{content:'✓';color:var(--green);font-weight:600;flex-shrink:0;}
 
-  .modal-overlay {
-    position: fixed; inset: 0; background: rgba(0,0,0,0.35);
-    display: flex; align-items: center; justify-content: center;
-    z-index: 200; opacity: 0; pointer-events: none; transition: opacity 0.2s;
-  }
-  .modal-overlay.open { opacity: 1; pointer-events: all; }
-  .modal {
-    background: var(--surface);
-    border-radius: var(--radius);
-    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
-    width: 560px; max-width: 95vw;
-    max-height: 90vh; overflow-y: auto;
-    transform: translateY(12px); transition: transform 0.2s;
-  }
-  .modal-overlay.open .modal { transform: translateY(0); }
-  .modal-header { padding: 20px 22px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
-  .modal-title { font-size: 15px; font-weight: 700; }
-  .modal-body { padding: 20px 22px; }
-  .modal-footer { padding: 14px 22px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 8px; }
-  .close-btn { background: none; border: none; cursor: pointer; font-size: 18px; color: var(--text3); padding: 2px 6px; border-radius: 4px; }
-  .close-btn:hover { color: var(--text); background: var(--surface2); }
+  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.35);display:flex;align-items:center;justify-content:center;z-index:200;opacity:0;pointer-events:none;transition:opacity 0.2s;}
+  .modal-overlay.open{opacity:1;pointer-events:all;}
+  .modal{background:var(--surface);border-radius:var(--radius);box-shadow:0 20px 60px rgba(0,0,0,0.2);width:560px;max-width:95vw;max-height:90vh;overflow-y:auto;transform:translateY(12px);transition:transform 0.2s;}
+  .modal-overlay.open .modal{transform:translateY(0);}
+  .modal-header{padding:20px 22px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+  .modal-title{font-size:15px;font-weight:700;}
+  .modal-body{padding:20px 22px;}
+  .modal-footer{padding:14px 22px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px;}
+  .close-btn{background:none;border:none;cursor:pointer;font-size:18px;color:var(--text3);padding:2px 6px;border-radius:4px;}
+  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+  .form-group{display:flex;flex-direction:column;gap:5px;}
+  .form-group.full{grid-column:1/-1;}
+  .form-label{font-size:12px;font-weight:500;color:var(--text2);}
+  .form-field{border:1px solid var(--border2);border-radius:var(--radius2);padding:8px 11px;font-size:13px;font-family:'Noto Sans KR',sans-serif;background:var(--surface);}
+  .form-field:focus{outline:none;border-color:var(--accent);}
+  .form-textarea{resize:vertical;min-height:80px;line-height:1.6;}
 
-  .toast-container { position: fixed; bottom: 24px; right: 24px; display: flex; flex-direction: column; gap: 8px; z-index: 300; }
-  .toast {
-    background: var(--text);
-    color: #fff;
-    padding: 11px 18px; border-radius: var(--radius2);
-    font-size: 13px; font-weight: 500;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.25);
-    display: flex; align-items: center; gap: 8px;
-    transform: translateX(100px); opacity: 0;
-    transition: all 0.25s;
-    max-width: 320px;
-  }
-  .toast.show { transform: translateX(0); opacity: 1; }
-  .toast.success { background: var(--green); }
-  .toast.error { background: var(--red); }
-  .toast.info { background: var(--accent); }
+  .toast-container{position:fixed;bottom:24px;right:24px;display:flex;flex-direction:column;gap:8px;z-index:300;}
+  .toast{background:var(--text);color:#fff;padding:11px 18px;border-radius:var(--radius2);font-size:13px;font-weight:500;box-shadow:0 4px 20px rgba(0,0,0,0.25);transform:translateX(100px);opacity:0;transition:all 0.25s;max-width:320px;}
+  .toast.show{transform:translateX(0);opacity:1;}
+  .toast.success{background:var(--green);}
+  .toast.error{background:var(--red);}
+  .toast.info{background:var(--accent);}
 
-  ::-webkit-scrollbar { width: 5px; height: 5px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 10px; }
-  ::-webkit-scrollbar-thumb:hover { background: var(--text3); }
+  ::-webkit-scrollbar{width:5px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:10px;}
+  .spin{animation:spin 1s linear infinite;display:inline-block;}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .loading-overlay{display:flex;align-items:center;justify-content:center;padding:40px;color:var(--text3);font-size:13px;gap:8px;}
+  .list-empty{text-align:center;padding:40px 20px;color:var(--text3);font-size:13px;}
+  .list-empty-icon{font-size:32px;margin-bottom:8px;}
 
-  .divider { height: 1px; background: var(--border); margin: 14px 0; }
+  /* 녹음 파형 시각화 */
+  .wave-box{display:flex;align-items:center;justify-content:center;gap:3px;height:40px;margin-bottom:14px;}
+  .wave-bar{width:4px;background:var(--accent);border-radius:4px;height:8px;transition:height 0.1s;}
+  .wave-bar.active{animation:wave 0.8s ease-in-out infinite;}
+  .wave-bar:nth-child(1){animation-delay:0s}
+  .wave-bar:nth-child(2){animation-delay:0.1s}
+  .wave-bar:nth-child(3){animation-delay:0.2s}
+  .wave-bar:nth-child(4){animation-delay:0.3s}
+  .wave-bar:nth-child(5){animation-delay:0.2s}
+  .wave-bar:nth-child(6){animation-delay:0.1s}
+  .wave-bar:nth-child(7){animation-delay:0s}
+  @keyframes wave{0%,100%{height:8px}50%{height:32px}}
 
-  .loading-overlay {
-    display: flex; align-items: center; justify-content: center;
-    padding: 40px; color: var(--text3); font-size: 13px; gap: 8px;
+  @media(max-width:900px){
+    .layout{grid-template-columns:1fr;}
+    .container{padding:16px;}
   }
 </style>
 </head>
@@ -346,85 +161,86 @@
 <div class="header">
   <div class="header-left">
     <div class="header-logo">📋</div>
-    <div>
-      <div class="header-title">회의록 관리</div>
-    </div>
+    <div class="header-title">회의록 관리</div>
     <span class="header-sub">Meeting Notes</span>
   </div>
-  <div style="display:flex;gap:8px;align-items:center;">
-    <div id="dbStatus" style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text3);">
-      <span id="dbDot" style="width:7px;height:7px;border-radius:50%;background:var(--text3);display:inline-block;"></span>
-      <span id="dbLabel">연결 중...</span>
-    </div>
+  <div class="db-badge">
+    <span class="db-dot" id="dbDot"></span>
+    <span id="dbLabel" style="color:var(--text3);">연결 중...</span>
   </div>
 </div>
 
 <div class="container">
   <div class="layout">
 
+    <!-- LEFT -->
     <div>
-
       <div class="card" style="margin-bottom:20px;">
         <div class="card-header">
-          <div class="card-header-icon blue">🎙️</div>
+          <div class="card-icon blue">🎙️</div>
           <div>
-            <div class="card-title">회의 녹음 & STT</div>
-            <div class="card-desc">음성 인식으로 실시간 텍스트 변환 → Gemini AI 자동 요약</div>
+            <div class="card-title">회의 녹음 & AI 분석</div>
+            <div class="card-desc">녹음 종료 후 Gemini AI가 텍스트 변환 + 자동 요약</div>
           </div>
         </div>
         <div class="card-body">
+
+          <!-- 상태 표시 -->
           <div class="rec-status">
             <div class="rec-dot" id="recDot"></div>
-            <div class="rec-info">
-              <div class="rec-label" id="recLabel">대기 중</div>
+            <div style="flex:1;">
+              <div class="rec-label" id="recLabel">녹음 대기 중</div>
               <div class="rec-time" id="recTime">00:00:00</div>
             </div>
-            <div style="font-size:11px;color:var(--text3);" id="wordCount">0 단어</div>
+            <div style="font-size:11px;color:var(--text3);" id="recSize"></div>
           </div>
+
+          <!-- 파형 시각화 -->
+          <div class="wave-box" id="waveBox" style="display:none;">
+            <div class="wave-bar" id="w1"></div>
+            <div class="wave-bar" id="w2"></div>
+            <div class="wave-bar" id="w3"></div>
+            <div class="wave-bar" id="w4"></div>
+            <div class="wave-bar" id="w5"></div>
+            <div class="wave-bar" id="w6"></div>
+            <div class="wave-bar" id="w7"></div>
+          </div>
+
+          <!-- 버튼 -->
           <div class="rec-controls">
-            <button class="btn btn-primary" id="btnStart" onclick="startRecording()">
-              <span>▶</span> 녹음 시작
-            </button>
-            <button class="btn btn-outline" id="btnPause" onclick="pauseRecording()" disabled>
-              <span>⏸</span> 일시정지
-            </button>
-            <button class="btn btn-danger" id="btnStop" onclick="stopRecording()" disabled>
-              <span>⏹</span> 종료
-            </button>
-            <button class="btn btn-outline" id="btnClear" onclick="clearTranscript()" style="margin-left:auto;">
-              <span>🗑</span> 초기화
-            </button>
+            <button class="btn btn-primary" id="btnStart" onclick="startRecording()">▶ 녹음 시작</button>
+            <button class="btn btn-outline" id="btnPause" onclick="pauseRecording()" disabled>⏸ 일시정지</button>
+            <button class="btn btn-danger" id="btnStop" onclick="stopRecording()" disabled>⏹ 종료 & 분석</button>
+            <button class="btn btn-outline" id="btnClear" onclick="clearAll()" style="margin-left:auto;">🗑 초기화</button>
           </div>
 
-          <div id="sttNotice" style="font-size:12px;color:var(--text3);margin-bottom:8px;display:none;">
-            💡 Chrome 브라우저 권장 / 마이크 권한 허용 필요
+          <!-- AI 분석 진행 -->
+          <div class="analysis-box" id="analysisBox">
+            <div class="analysis-step">
+              <span class="spin">⟳</span>
+              <span id="analysisText">Gemini AI 분석 중...</span>
+            </div>
+            <div class="analysis-progress">
+              <div class="analysis-bar" id="analysisBar"></div>
+            </div>
           </div>
 
-          <div class="transcript-area" id="transcriptArea" contenteditable="true" 
-               oninput="onTranscriptInput()"
-               onfocus="document.getElementById('sttNotice').style.display='block'">
-            <span class="transcript-placeholder" id="placeholder">녹음 시작 후 음성이 여기에 실시간으로 표시됩니다...</span>
+          <!-- 변환된 텍스트 -->
+          <div id="transcriptSection" style="display:none;">
+            <div class="transcript-label">🎙 변환된 텍스트</div>
+            <div class="transcript-box show" id="transcriptBox"></div>
           </div>
 
-          <div class="gemini-status idle" id="geminiStatus">
-            <span>✦</span>
-            <span id="geminiStatusText">Gemini AI 자동 요약 대기 중</span>
-          </div>
+          <!-- 직접 입력 버튼 -->
+          <button class="btn btn-outline" onclick="openNewModal()" style="width:100%;justify-content:center;">✏️ 직접 입력으로 회의록 작성</button>
 
-          <div style="display:flex;gap:8px;">
-            <button class="btn btn-green" onclick="summarizeWithGemini()" id="btnSummarize">
-              <span>✦</span> Gemini로 자동 요약
-            </button>
-            <button class="btn btn-outline" onclick="openNewModal()">
-              <span>✏️</span> 직접 입력
-            </button>
-          </div>
         </div>
       </div>
 
+      <!-- 목록 -->
       <div class="card">
         <div class="card-header">
-          <div class="card-header-icon blue">📂</div>
+          <div class="card-icon blue">📂</div>
           <div style="flex:1;">
             <div class="card-title">회의록 목록</div>
             <div class="card-desc" id="listCount">불러오는 중...</div>
@@ -435,9 +251,9 @@
           <div class="list-toolbar">
             <div class="search-box">
               <span class="search-icon">🔍</span>
-              <input type="text" id="searchInput" placeholder="회의 제목, 참석자, 내용 검색..." oninput="filterMeetings()" />
+              <input type="text" id="searchInput" placeholder="제목, 참석자, 내용 검색..." oninput="filterMeetings()" />
             </div>
-            <select class="form-input" id="sortSelect" style="width:120px;" onchange="filterMeetings()">
+            <select class="form-input" id="sortSelect" style="width:110px;" onchange="filterMeetings()">
               <option value="desc">최신순</option>
               <option value="asc">오래된순</option>
             </select>
@@ -449,104 +265,104 @@
       </div>
     </div>
 
+    <!-- RIGHT: 상세 -->
     <div class="detail-panel">
       <div class="section-header">
         <span class="section-title">회의록 상세</span>
       </div>
-
       <div id="detailEmpty" class="detail-empty">
         <div class="detail-empty-icon">📄</div>
-        <div class="detail-empty-text">회의록을 선택하면<br>상세 내용이 여기에 표시됩니다</div>
+        <div style="font-size:13px;">회의록을 선택하면<br>상세 내용이 표시됩니다</div>
       </div>
-
       <div id="detailContent" style="display:none;">
         <div class="card">
           <div class="card-body">
             <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:14px;">
-              <div style="font-size:15px;font-weight:700;color:var(--text);line-height:1.4;" id="detTitle"></div>
+              <div style="font-size:15px;font-weight:700;line-height:1.4;" id="detTitle"></div>
               <div style="display:flex;gap:5px;flex-shrink:0;">
                 <button class="btn btn-outline btn-sm" onclick="openEditModal()">✏️ 수정</button>
                 <button class="btn btn-sm" style="background:var(--red-light);color:var(--red);border:1px solid rgba(232,72,85,0.2);" onclick="deleteSelected()">🗑</button>
               </div>
             </div>
-            <div class="detail-meta" style="margin-bottom:14px;">
-              <span class="detail-meta-item">📅 <span id="detDate"></span></span>
-              <span style="color:var(--border2);">|</span>
-              <span class="detail-meta-item">🕐 <span id="detCreated"></span></span>
+            <div style="display:flex;gap:10px;margin-bottom:14px;font-size:12px;color:var(--text3);">
+              <span>📅 <span id="detDate"></span></span>
+              <span>|</span>
+              <span>🕐 <span id="detCreated"></span></span>
             </div>
-
             <div class="detail-section">
-              <div class="detail-section-label">👥 참석자</div>
-              <div class="attendee-chips" id="detAttendees"></div>
-            </div>
-            <div class="divider"></div>
-            <div class="detail-section">
-              <div class="detail-section-label">📝 회의 요약</div>
-              <div class="detail-content" id="detSummary"></div>
+              <div class="detail-label">👥 참석자</div>
+              <div id="detAttendees"></div>
             </div>
             <div class="divider"></div>
             <div class="detail-section">
-              <div class="detail-section-label">✅ 결정사항</div>
-              <ul class="decision-list" id="detDecisions"></ul>
+              <div class="detail-label">📝 회의 요약</div>
+              <div class="detail-content-box" id="detSummary"></div>
             </div>
             <div class="divider"></div>
             <div class="detail-section">
-              <div class="detail-section-label">⚡ Action Items</div>
-              <ul class="action-list" id="detActions"></ul>
+              <div class="detail-label">✅ 결정사항</div>
+              <div id="detDecisions"></div>
             </div>
             <div class="divider"></div>
             <div class="detail-section">
-              <div class="detail-section-label" style="display:flex;justify-content:space-between;">
-                <span>🎙 원문 (STT)</span>
+              <div class="detail-label">⚡ Action Items</div>
+              <div id="detActions"></div>
+            </div>
+            <div class="divider"></div>
+            <div class="detail-section">
+              <div class="detail-label" style="display:flex;justify-content:space-between;">
+                <span>🎙 원문</span>
                 <button class="btn btn-outline btn-sm" id="rawToggleBtn" onclick="toggleRaw()">펼치기</button>
               </div>
               <div id="rawSection" style="display:none;">
-                <div class="detail-content" id="detRaw" style="max-height:180px;overflow-y:auto;font-size:12px;line-height:1.7;margin-top:6px;"></div>
+                <div class="detail-content-box" id="detRaw" style="max-height:160px;overflow-y:auto;font-size:12px;margin-top:6px;"></div>
               </div>
             </div>
           </div>
         </div>
       </div>
     </div>
+
   </div>
 </div>
 
+<!-- 저장 모달 -->
 <div class="modal-overlay" id="saveModal">
   <div class="modal">
     <div class="modal-header">
       <div class="modal-title" id="modalTitle">회의록 저장</div>
-      <button class="close-btn" onclick="closeModal('saveModal')">✕</button>
+      <button class="close-btn" onclick="closeModal()">✕</button>
     </div>
     <div class="modal-body">
       <div class="form-grid">
         <div class="form-group full">
           <label class="form-label">📌 회의 제목 *</label>
-          <input type="text" class="form-input" id="fTitle" placeholder="예) 2025년 6월 음반 발주 검토 회의" />
+          <input type="text" class="form-field" id="fTitle" placeholder="예) 2025년 6월 음반 발주 검토 회의" />
         </div>
         <div class="form-group">
           <label class="form-label">📅 회의 날짜 *</label>
-          <input type="date" class="form-input" id="fDate" />
+          <input type="date" class="form-field" id="fDate" />
         </div>
         <div class="form-group">
           <label class="form-label">👥 참석자 (쉼표 구분)</label>
-          <input type="text" class="form-input" id="fAttendees" placeholder="예) 김팀장, 이대리, 박주임" />
+          <input type="text" class="form-field" id="fAttendees" placeholder="예) 김팀장, 이대리, 박주임" />
         </div>
         <div class="form-group full">
           <label class="form-label">📝 회의 요약</label>
-          <textarea class="form-input form-textarea" id="fSummary" placeholder="회의 핵심 내용을 요약해 주세요"></textarea>
+          <textarea class="form-field form-textarea" id="fSummary" placeholder="회의 핵심 내용 요약"></textarea>
         </div>
         <div class="form-group full">
           <label class="form-label">✅ 결정사항 (줄바꿈 구분)</label>
-          <textarea class="form-input form-textarea" id="fDecisions" placeholder="결정사항을 줄마다 하나씩 입력하세요"></textarea>
+          <textarea class="form-field form-textarea" id="fDecisions" placeholder="결정사항을 줄마다 하나씩"></textarea>
         </div>
         <div class="form-group full">
           <label class="form-label">⚡ Action Items (줄바꿈 구분)</label>
-          <textarea class="form-input form-textarea" id="fActions" placeholder="담당자 및 액션 아이템을 줄마다 하나씩 입력하세요"></textarea>
+          <textarea class="form-field form-textarea" id="fActions" placeholder="담당자 및 액션 아이템"></textarea>
         </div>
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn btn-outline" onclick="closeModal('saveModal')">취소</button>
+      <button class="btn btn-outline" onclick="closeModal()">취소</button>
       <button class="btn btn-primary" onclick="saveMeeting()" id="btnSave">💾 저장</button>
     </div>
   </div>
@@ -556,261 +372,295 @@
 
 <script>
 // ===== CONFIG =====
-// 아래 YOUR_API_KEY_HERE 부분을 본인의 Gemini API 키로 교체하세요
+// 아래 YOUR_API_KEY_HERE 를 본인의 Gemini API 키로 교체하세요
 const GEMINI_API_KEY = 'AQ.Ab8RN6LgW0hRREPZaTpy3Kij9axJ5CeU9TUf4YCdauFWT3Ce7Q';
 
 const SUPABASE_URL = 'https://ftfpicvwprpcuhstteas.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ0ZnBpY3Z3cHJwY3Voc3R0ZWFzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgzNTA3NTcsImV4cCI6MjA2MzkyNjc1N30.dvtxYJdMZ0lFbmwbH6bsNPKPpHZ_bM3jiFajhNKBVhM';
 
-let recognition = null;
+// ===== 상태 =====
+let mediaRecorder = null;
+let audioChunks = [];
 let isRecording = false;
 let isPaused = false;
 let timerInterval = null;
 let seconds = 0;
-let fullTranscript = '';
-let interimTranscript = '';
-let meetings = [];
-let filteredMeetings = [];
-let selectedId = null;
-let editMode = false;
-let editId = null;
+let meetings = [], filteredMeetings = [], selectedId = null;
+let editMode = false, editId = null;
+let rawText = '';
 
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('fDate').value = new Date().toISOString().split('T')[0];
-  if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-    document.getElementById('btnStart').disabled = true;
-    document.getElementById('btnStart').title = 'Web Speech API를 지원하지 않는 브라우저입니다';
-    showToast('⚠️ 이 브라우저는 음성 인식을 지원하지 않습니다. Chrome을 사용해 주세요.', 'error', 4000);
-  }
   checkDb();
   loadMeetings();
 });
 
+// ===== DB =====
+async function sbFetch(path, opts={}) {
+  return fetch(SUPABASE_URL+'/rest/v1'+path, {
+    ...opts,
+    headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY,'Content-Type':'application/json','Prefer':opts.prefer||'',...(opts.headers||{})}
+  });
+}
+
 async function checkDb() {
   try {
     const r = await sbFetch('/meeting_notes?select=id&limit=1');
-    if (r.ok) {
-      document.getElementById('dbDot').style.background = 'var(--green)';
-      document.getElementById('dbLabel').textContent = 'DB 연결됨';
-    } else {
-      document.getElementById('dbDot').style.background = 'var(--red)';
-      document.getElementById('dbLabel').textContent = 'DB 연결 실패';
-    }
-  } catch(e) {
+    document.getElementById('dbDot').style.background = r.ok ? 'var(--green)' : 'var(--red)';
+    document.getElementById('dbLabel').style.color = r.ok ? 'var(--green)' : 'var(--red)';
+    document.getElementById('dbLabel').textContent = r.ok ? 'DB 연결됨' : 'DB 오류';
+  } catch {
     document.getElementById('dbDot').style.background = 'var(--red)';
     document.getElementById('dbLabel').textContent = 'DB 오류';
   }
 }
 
-async function sbFetch(path, options = {}) {
-  return fetch(SUPABASE_URL + '/rest/v1' + path, {
-    ...options,
-    headers: {
-      'apikey': SUPABASE_ANON_KEY,
-      'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
-      'Content-Type': 'application/json',
-      'Prefer': options.prefer || '',
-      ...(options.headers || {})
-    }
-  });
-}
+// ===== 녹음 =====
+async function startRecording() {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    
+    // 지원 코덱 확인
+    const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus') 
+      ? 'audio/webm;codecs=opus' 
+      : MediaRecorder.isTypeSupported('audio/webm')
+      ? 'audio/webm'
+      : 'audio/ogg;codecs=opus';
 
-function startRecording() {
-  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SR) { showToast('음성 인식 미지원 브라우저입니다', 'error'); return; }
+    mediaRecorder = new MediaRecorder(stream, { mimeType });
+    audioChunks = [];
 
-  recognition = new SR();
-  recognition.lang = 'ko-KR';
-  recognition.continuous = true;
-  recognition.interimResults = true;
-  recognition.maxAlternatives = 1;
+    mediaRecorder.ondataavailable = (e) => {
+      if (e.data.size > 0) audioChunks.push(e.data);
+    };
 
-  recognition.onstart = () => {
-    isRecording = true; isPaused = false;
-    updateRecUI();
+    mediaRecorder.onstop = async () => {
+      stream.getTracks().forEach(t => t.stop());
+      await analyzeWithGemini();
+    };
+
+    mediaRecorder.start(1000);
+    isRecording = true;
+    isPaused = false;
     startTimer();
-  };
-  recognition.onresult = (e) => {
-    interimTranscript = '';
-    for (let i = e.resultIndex; i < e.results.length; i++) {
-      const t = e.results[i][0].transcript;
-      if (e.results[i].isFinal) {
-        fullTranscript += t + ' ';
-      } else {
-        interimTranscript = t;
-      }
-    }
-    updateTranscriptDisplay();
-  };
-recognition.onerror = (e) => {
-  console.log('STT 에러:', e.error);
-  showToast('음성 인식 오류: ' + e.error, 'error');
-  isRecording = false;
-  isPaused = false;
-  stopTimer();
-  document.getElementById('recLabel').textContent = '오류 발생';
-  document.getElementById('recDot').style.background = 'var(--red)';
-  document.getElementById('btnStart').disabled = false;
-  document.getElementById('btnPause').disabled = true;
-  document.getElementById('btnStop').disabled = true;
-};
-  recognition.onend = () => {
-    if (isRecording && !isPaused) {
-      recognition.start();
-    }
-  };
+    updateRecUI('recording');
+    document.getElementById('waveBox').style.display = 'flex';
+    document.querySelectorAll('.wave-bar').forEach(b => b.classList.add('active'));
+    showToast('🎙 녹음을 시작합니다', 'info');
 
-  recognition.start();
-  showToast('🎙 녹음을 시작합니다', 'info');
+  } catch(e) {
+    showToast('마이크 접근 오류: ' + e.message, 'error');
+  }
 }
 
 function pauseRecording() {
-  if (!isRecording) return;
+  if (!mediaRecorder) return;
   if (!isPaused) {
+    mediaRecorder.pause();
     isPaused = true;
-    recognition.stop();
     stopTimer();
-    document.getElementById('recLabel').textContent = '일시정지';
-    document.getElementById('recDot').className = 'rec-dot paused';
-    document.getElementById('btnPause').innerHTML = '<span>▶</span> 재개';
+    updateRecUI('paused');
+    document.querySelectorAll('.wave-bar').forEach(b => b.classList.remove('active'));
+    document.getElementById('btnPause').innerHTML = '▶ 재개';
   } else {
+    mediaRecorder.resume();
     isPaused = false;
-    recognition.start();
     startTimer();
-    document.getElementById('recLabel').textContent = '녹음 중';
-    document.getElementById('recDot').className = 'rec-dot recording';
-    document.getElementById('btnPause').innerHTML = '<span>⏸</span> 일시정지';
+    updateRecUI('recording');
+    document.querySelectorAll('.wave-bar').forEach(b => b.classList.add('active'));
+    document.getElementById('btnPause').innerHTML = '⏸ 일시정지';
   }
 }
 
 function stopRecording() {
-  if (recognition) { recognition.stop(); recognition = null; }
-  isRecording = false; isPaused = false;
+  if (!mediaRecorder) return;
+  mediaRecorder.stop();
+  isRecording = false;
+  isPaused = false;
   stopTimer();
-  document.getElementById('recLabel').textContent = '녹음 완료';
-  document.getElementById('recDot').className = 'rec-dot';
-  document.getElementById('recDot').style.background = 'var(--green)';
-  document.getElementById('btnStart').disabled = false;
-  document.getElementById('btnPause').disabled = true;
-  document.getElementById('btnStop').disabled = true;
-  document.getElementById('btnPause').innerHTML = '<span>⏸</span> 일시정지';
-  showToast('✅ 녹음이 완료되었습니다', 'success');
+  updateRecUI('stopped');
+  document.getElementById('waveBox').style.display = 'none';
+  document.querySelectorAll('.wave-bar').forEach(b => b.classList.remove('active'));
 }
 
-function updateRecUI() {
-  document.getElementById('recLabel').textContent = '녹음 중';
-  document.getElementById('recDot').className = 'rec-dot recording';
-  document.getElementById('recDot').style.background = '';
-  document.getElementById('btnStart').disabled = true;
-  document.getElementById('btnPause').disabled = false;
-  document.getElementById('btnStop').disabled = false;
+function clearAll() {
+  if (isRecording) stopRecording();
+  audioChunks = [];
+  rawText = '';
+  document.getElementById('transcriptSection').style.display = 'none';
+  document.getElementById('transcriptBox').textContent = '';
+  document.getElementById('analysisBox').classList.remove('show');
+  seconds = 0;
+  document.getElementById('recTime').textContent = '00:00:00';
+  document.getElementById('recSize').textContent = '';
+  updateRecUI('idle');
+  showToast('초기화 완료', 'info');
 }
 
-function updateTranscriptDisplay() {
-  const el = document.getElementById('transcriptArea');
-  document.getElementById('placeholder').style.display = 'none';
-  const words = (fullTranscript + interimTranscript).trim().split(/\s+/).filter(Boolean);
-  document.getElementById('wordCount').textContent = words.length + ' 단어';
-  el.innerHTML = '<span style="color:var(--text);">' + escHtml(fullTranscript) + '</span>' +
-    (interimTranscript ? '<span style="color:var(--text3);font-style:italic;">' + escHtml(interimTranscript) + '</span>' : '');
-  el.scrollTop = el.scrollHeight;
+function updateRecUI(state) {
+  const dot = document.getElementById('recDot');
+  const label = document.getElementById('recLabel');
+  const btnStart = document.getElementById('btnStart');
+  const btnPause = document.getElementById('btnPause');
+  const btnStop = document.getElementById('btnStop');
+
+  dot.className = 'rec-dot';
+  if (state === 'recording') {
+    dot.classList.add('recording');
+    label.textContent = '녹음 중';
+    btnStart.disabled = true;
+    btnPause.disabled = false;
+    btnStop.disabled = false;
+  } else if (state === 'paused') {
+    dot.style.background = 'var(--orange)';
+    label.textContent = '일시정지';
+  } else if (state === 'stopped') {
+    dot.classList.add('done');
+    label.textContent = '분석 중...';
+    btnStart.disabled = true;
+    btnPause.disabled = true;
+    btnStop.disabled = true;
+  } else {
+    dot.style.background = '';
+    label.textContent = '녹음 대기 중';
+    btnStart.disabled = false;
+    btnPause.disabled = true;
+    btnStop.disabled = true;
+    btnPause.innerHTML = '⏸ 일시정지';
+  }
 }
 
-function onTranscriptInput() {
-  fullTranscript = document.getElementById('transcriptArea').innerText;
-  document.getElementById('placeholder').style.display = 'none';
-  const words = fullTranscript.trim().split(/\s+/).filter(Boolean);
-  document.getElementById('wordCount').textContent = words.length + ' 단어';
-}
-
-function clearTranscript() {
-  fullTranscript = ''; interimTranscript = '';
-  const el = document.getElementById('transcriptArea');
-  el.innerHTML = '<span class="transcript-placeholder" id="placeholder">녹음 시작 후 음성이 여기에 실시간으로 표시됩니다...</span>';
-  document.getElementById('wordCount').textContent = '0 단어';
-}
-
+// ===== 타이머 =====
 function startTimer() {
   timerInterval = setInterval(() => {
     seconds++;
-    document.getElementById('recTime').textContent = formatTime(seconds);
+    document.getElementById('recTime').textContent = fmt(seconds);
+    if (audioChunks.length > 0) {
+      const size = audioChunks.reduce((a,b) => a + b.size, 0);
+      document.getElementById('recSize').textContent = (size/1024/1024).toFixed(1) + 'MB';
+    }
   }, 1000);
 }
 function stopTimer() { clearInterval(timerInterval); }
-function formatTime(s) {
-  const h = String(Math.floor(s/3600)).padStart(2,'0');
-  const m = String(Math.floor((s%3600)/60)).padStart(2,'0');
-  const sec = String(s%60).padStart(2,'0');
-  return h+':'+m+':'+sec;
-}
+function fmt(s) { return [Math.floor(s/3600),Math.floor((s%3600)/60),s%60].map(v=>String(v).padStart(2,'0')).join(':'); }
 
-async function summarizeWithGemini() {
-  const text = document.getElementById('transcriptArea').innerText.trim();
-  if (!text || text.includes('녹음 시작 후')) { showToast('먼저 녹음하거나 텍스트를 입력해 주세요', 'error'); return; }
-  
+// ===== GEMINI 오디오 분석 =====
+async function analyzeWithGemini() {
   if (!GEMINI_API_KEY || GEMINI_API_KEY === 'YOUR_API_KEY_HERE') {
-    showToast('❌ API 키가 설정되지 않았습니다. HTML 파일을 수정해 주세요.', 'error');
+    showToast('API 키를 설정해 주세요', 'error');
+    updateRecUI('idle');
+    return;
+  }
+  if (audioChunks.length === 0) {
+    showToast('녹음 데이터가 없습니다', 'error');
+    updateRecUI('idle');
     return;
   }
 
-  setGeminiStatus('loading', '⟳ Gemini AI가 분석 중입니다...');
-  document.getElementById('btnSummarize').disabled = true;
+  const analysisBox = document.getElementById('analysisBox');
+  const analysisBar = document.getElementById('analysisBar');
+  const analysisText = document.getElementById('analysisText');
+  analysisBox.classList.add('show');
 
-  const prompt = `아래는 회의 녹취 내용입니다. 다음 JSON 형식으로만 응답하세요. 다른 텍스트, 마크다운, 설명은 절대 포함하지 마세요.
-
-{
-  "title": "회의 제목 (20자 이내, 날짜나 주제 포함)",
-  "attendees": ["참석자1", "참석자2"],
-  "summary": "회의 핵심 내용 요약 (3-5문장)",
-  "decisions": ["결정사항1", "결정사항2", "결정사항3"],
-  "actions": ["담당자: 액션아이템1", "담당자: 액션아이템2"]
-}
-
-회의 내용:
-${text.substring(0, 4000)}`;
+  // 진행 애니메이션
+  let progress = 0;
+  const progressInterval = setInterval(() => {
+    progress = Math.min(progress + 2, 90);
+    analysisBar.style.width = progress + '%';
+  }, 300);
 
   try {
-    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-    });
+    // 오디오 blob → base64
+    analysisText.textContent = '오디오 처리 중...';
+    const audioBlob = new Blob(audioChunks, { type: mediaRecorder.mimeType });
+    const base64 = await blobToBase64(audioBlob);
+    const base64Data = base64.split(',')[1];
+
+    analysisText.textContent = 'Gemini AI 분석 중...';
+
+    const prompt = `이 음성 파일은 회의 녹음입니다. 아래 JSON 형식으로만 응답하세요. 다른 텍스트나 마크다운은 포함하지 마세요.
+
+{
+  "transcript": "전체 음성을 텍스트로 변환한 내용",
+  "title": "회의 제목 (20자 이내)",
+  "attendees": ["참석자1", "참석자2"],
+  "summary": "회의 핵심 내용 요약 (3-5문장)",
+  "decisions": ["결정사항1", "결정사항2"],
+  "actions": ["담당자: 액션아이템1", "담당자: 액션아이템2"]
+}`;
+
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{
+            parts: [
+              {
+                inline_data: {
+                  mime_type: audioBlob.type || 'audio/webm',
+                  data: base64Data
+                }
+              },
+              { text: prompt }
+            ]
+          }]
+        })
+      }
+    );
+
     const data = await res.json();
     if (!res.ok) throw new Error(data.error?.message || 'API 오류');
-    
+
     let raw = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-    raw = raw.replace(/```json/g,'').replace(/```/g,'').trim();
+    raw = raw.replace(/```json|```/g, '').trim();
     const parsed = JSON.parse(raw);
 
-    openNewModal(true);
-    document.getElementById('fTitle').value = parsed.title || '';
-    document.getElementById('fDate').value = new Date().toISOString().split('T')[0];
-    document.getElementById('fAttendees').value = (parsed.attendees || []).join(', ');
-    document.getElementById('fSummary').value = parsed.summary || '';
-    document.getElementById('fDecisions').value = (parsed.decisions || []).join('\n');
-    document.getElementById('fActions').value = (parsed.actions || []).join('\n');
+    clearInterval(progressInterval);
+    analysisBar.style.width = '100%';
+    analysisText.textContent = '✅ 분석 완료!';
 
-    setGeminiStatus('done', '✅ 분석 완료! 내용을 확인 후 저장하세요');
-    showToast('✅ Gemini 분석 완료', 'success');
+    // 변환 텍스트 표시
+    rawText = parsed.transcript || '';
+    if (rawText) {
+      document.getElementById('transcriptSection').style.display = 'block';
+      document.getElementById('transcriptBox').textContent = rawText;
+    }
+
+    // 저장 모달 열기
+    setTimeout(() => {
+      analysisBox.classList.remove('show');
+      openNewModal(true);
+      document.getElementById('fTitle').value = parsed.title || '';
+      document.getElementById('fDate').value = new Date().toISOString().split('T')[0];
+      document.getElementById('fAttendees').value = (parsed.attendees || []).join(', ');
+      document.getElementById('fSummary').value = parsed.summary || '';
+      document.getElementById('fDecisions').value = (parsed.decisions || []).join('\n');
+      document.getElementById('fActions').value = (parsed.actions || []).join('\n');
+      updateRecUI('idle');
+      showToast('✅ 분석 완료! 내용 확인 후 저장하세요', 'success');
+    }, 1000);
+
   } catch(e) {
-    setGeminiStatus('error', '❌ 오류: ' + e.message);
-    showToast('Gemini 오류: ' + e.message, 'error');
+    clearInterval(progressInterval);
+    analysisBox.classList.remove('show');
+    updateRecUI('idle');
+    showToast('분석 오류: ' + e.message, 'error');
+    console.error(e);
   }
-  document.getElementById('btnSummarize').disabled = false;
 }
 
-function setGeminiStatus(type, text) {
-  const el = document.getElementById('geminiStatus');
-  el.className = 'gemini-status ' + type;
-  el.children[1].textContent = text;
-  if (type === 'loading') el.children[0].className = 'spin';
-  else el.children[0].className = '';
-  if (type === 'loading') el.children[0].textContent = '⟳';
-  else if (type === 'done') el.children[0].textContent = '✅';
-  else if (type === 'error') el.children[0].textContent = '❌';
-  else el.children[0].textContent = '✦';
+function blobToBase64(blob) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
 }
 
+// ===== 목록 =====
 async function loadMeetings() {
   document.getElementById('meetingList').innerHTML = '<div class="loading-overlay"><span class="spin">⟳</span> 불러오는 중...</div>';
   try {
@@ -821,228 +671,147 @@ async function loadMeetings() {
     renderList();
     document.getElementById('listCount').textContent = `총 ${meetings.length}개의 회의록`;
   } catch(e) {
-    document.getElementById('meetingList').innerHTML = '<div class="list-empty"><div class="list-empty-icon">⚠️</div>' + e.message + '</div>';
-    showToast('목록 로드 실패: ' + e.message, 'error');
+    document.getElementById('meetingList').innerHTML = `<div class="list-empty"><div class="list-empty-icon">⚠️</div>${e.message}</div>`;
   }
 }
 
 function filterMeetings() {
   const q = document.getElementById('searchInput').value.toLowerCase();
   const sort = document.getElementById('sortSelect').value;
-  filteredMeetings = meetings.filter(m => {
-    if (!q) return true;
-    return (m.title||'').toLowerCase().includes(q) ||
-           (m.summary||'').toLowerCase().includes(q) ||
-           (m.attendees||[]).join(' ').toLowerCase().includes(q) ||
-           (m.raw_text||'').toLowerCase().includes(q);
-  });
-  filteredMeetings.sort((a,b) => {
-    const da = new Date(a.date || a.created_at);
-    const db2 = new Date(b.date || b.created_at);
-    return sort === 'desc' ? db2 - da : da - db2;
-  });
+  filteredMeetings = meetings.filter(m => !q ||(m.title||'').toLowerCase().includes(q)||(m.summary||'').toLowerCase().includes(q)||(m.attendees||[]).join(' ').toLowerCase().includes(q));
+  filteredMeetings.sort((a,b)=>{ const da=new Date(a.date||a.created_at),db=new Date(b.date||b.created_at); return sort==='desc'?db-da:da-db; });
   renderList();
 }
 
 function renderList() {
   const el = document.getElementById('meetingList');
-  if (!filteredMeetings.length) {
-    el.innerHTML = '<div class="list-empty"><div class="list-empty-icon">📭</div>검색 결과가 없습니다</div>';
-    return;
-  }
+  if (!filteredMeetings.length) { el.innerHTML='<div class="list-empty"><div class="list-empty-icon">📭</div>검색 결과가 없습니다</div>'; return; }
   el.innerHTML = filteredMeetings.map(m => {
-    const attendees = Array.isArray(m.attendees) ? m.attendees : (m.attendees||'').split(',').map(a=>a.trim()).filter(Boolean);
-    const actions = Array.isArray(m.actions) ? m.actions : (m.actions||'').split('\n').filter(Boolean);
-    const date = m.date ? m.date.substring(0,10) : '';
+    const att = Array.isArray(m.attendees)?m.attendees:(m.attendees||'').split(',').map(a=>a.trim()).filter(Boolean);
+    const act = Array.isArray(m.actions)?m.actions:(m.actions||'').split('\n').filter(Boolean);
     return `<div class="meeting-item${selectedId===m.id?' active':''}" onclick="selectMeeting(${m.id})">
       <div class="meeting-item-header">
-        <div class="meeting-item-title">${escHtml(m.title||'(제목 없음)')}</div>
-        <div class="meeting-item-date">${date}</div>
+        <div class="meeting-item-title">${esc(m.title||'(제목 없음)')}</div>
+        <div class="meeting-item-date">${(m.date||'').substring(0,10)}</div>
       </div>
       <div class="meeting-item-meta">
-        ${attendees.slice(0,3).map(a=>`<span class="badge badge-blue">👤 ${escHtml(a)}</span>`).join('')}
-        ${attendees.length>3?`<span class="badge badge-blue">+${attendees.length-3}</span>`:''}
-        ${actions.length?`<span class="badge badge-green">⚡ ${actions.length}개 액션</span>`:''}
+        ${att.slice(0,3).map(a=>`<span class="badge badge-blue">👤 ${esc(a)}</span>`).join('')}
+        ${att.length>3?`<span class="badge badge-blue">+${att.length-3}</span>`:''}
+        ${act.length?`<span class="badge badge-green">⚡ ${act.length}개 액션</span>`:''}
       </div>
-      ${m.summary?`<div class="meeting-item-summary">${escHtml(m.summary)}</div>`:''}
+      ${m.summary?`<div class="meeting-item-summary">${esc(m.summary)}</div>`:''}
     </div>`;
   }).join('');
 }
 
 function selectMeeting(id) {
-  selectedId = id;
-  renderList();
-  const m = meetings.find(x => x.id === id);
-  if (!m) return;
-  showDetail(m);
-}
-
-function showDetail(m) {
-  document.getElementById('detailEmpty').style.display = 'none';
-  document.getElementById('detailContent').style.display = 'block';
-  document.getElementById('detTitle').textContent = m.title || '(제목 없음)';
-  document.getElementById('detDate').textContent = m.date ? m.date.substring(0,10) : '-';
-  document.getElementById('detCreated').textContent = m.created_at ? new Date(m.created_at).toLocaleString('ko-KR') : '-';
-
-  const attendees = Array.isArray(m.attendees) ? m.attendees : (m.attendees||'').split(',').map(a=>a.trim()).filter(Boolean);
-  document.getElementById('detAttendees').innerHTML = attendees.map(a=>`<span class="chip">👤 ${escHtml(a)}</span>`).join('') || '<span style="color:var(--text3);font-size:12px;">-</span>';
-
-  document.getElementById('detSummary').textContent = m.summary || '-';
-
-  const decisions = Array.isArray(m.decisions) ? m.decisions : (m.decisions||'').split('\n').filter(Boolean);
-  document.getElementById('detDecisions').innerHTML = decisions.length
-    ? decisions.map(d=>`<li class="decision-item">${escHtml(d)}</li>`).join('')
-    : '<li style="color:var(--text3);font-size:12px;padding:4px 0;">-</li>';
-
-  const actions = Array.isArray(m.actions) ? m.actions : (m.actions||'').split('\n').filter(Boolean);
-  document.getElementById('detActions').innerHTML = actions.length
-    ? actions.map(a=>`<li class="action-item">${escHtml(a)}</li>`).join('')
-    : '<li style="color:var(--text3);font-size:12px;padding:4px 0;">-</li>';
-
-  document.getElementById('detRaw').textContent = m.raw_text || '(원문 없음)';
-  document.getElementById('rawSection').style.display = 'none';
-  document.getElementById('rawToggleBtn').textContent = '펼치기';
+  selectedId = id; renderList();
+  const m = meetings.find(x=>x.id===id); if(!m) return;
+  document.getElementById('detailEmpty').style.display='none';
+  document.getElementById('detailContent').style.display='block';
+  document.getElementById('detTitle').textContent = m.title||'(제목 없음)';
+  document.getElementById('detDate').textContent = (m.date||'').substring(0,10);
+  document.getElementById('detCreated').textContent = m.created_at?new Date(m.created_at).toLocaleString('ko-KR'):'-';
+  const att = Array.isArray(m.attendees)?m.attendees:(m.attendees||'').split(',').map(a=>a.trim()).filter(Boolean);
+  document.getElementById('detAttendees').innerHTML = att.map(a=>`<span class="chip">👤 ${esc(a)}</span>`).join('')||'<span style="color:var(--text3);font-size:12px;">-</span>';
+  document.getElementById('detSummary').textContent = m.summary||'-';
+  const dec = Array.isArray(m.decisions)?m.decisions:(m.decisions||'').split('\n').filter(Boolean);
+  document.getElementById('detDecisions').innerHTML = dec.length?dec.map(d=>`<div class="decision-item">${esc(d)}</div>`).join(''):'<span style="color:var(--text3);font-size:12px;">-</span>';
+  const act = Array.isArray(m.actions)?m.actions:(m.actions||'').split('\n').filter(Boolean);
+  document.getElementById('detActions').innerHTML = act.length?act.map(a=>`<div class="action-item">${esc(a)}</div>`).join(''):'<span style="color:var(--text3);font-size:12px;">-</span>';
+  document.getElementById('detRaw').textContent = m.raw_text||'(원문 없음)';
+  document.getElementById('rawSection').style.display='none';
+  document.getElementById('rawToggleBtn').textContent='펼치기';
 }
 
 function toggleRaw() {
-  const sec = document.getElementById('rawSection');
-  const btn = document.getElementById('rawToggleBtn');
-  if (sec.style.display === 'none') { sec.style.display = 'block'; btn.textContent = '접기'; }
-  else { sec.style.display = 'none'; btn.textContent = '펼치기'; }
+  const s=document.getElementById('rawSection'),b=document.getElementById('rawToggleBtn');
+  s.style.display=s.style.display==='none'?'block':'none';
+  b.textContent=s.style.display==='block'?'접기':'펼치기';
 }
 
-function openNewModal(fromGemini = false) {
-  editMode = false; editId = null;
-  document.getElementById('modalTitle').textContent = '회의록 저장';
-  if (!fromGemini) {
-    document.getElementById('fTitle').value = '';
-    document.getElementById('fDate').value = new Date().toISOString().split('T')[0];
-    document.getElementById('fAttendees').value = '';
-    document.getElementById('fSummary').value = '';
-    document.getElementById('fDecisions').value = '';
-    document.getElementById('fActions').value = '';
+// ===== 모달 =====
+function openNewModal(fromGemini=false) {
+  editMode=false; editId=null;
+  document.getElementById('modalTitle').textContent='회의록 저장';
+  if(!fromGemini){
+    ['fTitle','fAttendees','fSummary','fDecisions','fActions'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('fDate').value=new Date().toISOString().split('T')[0];
   }
   document.getElementById('saveModal').classList.add('open');
 }
 
 function openEditModal() {
-  if (!selectedId) return;
-  const m = meetings.find(x => x.id === selectedId);
-  if (!m) return;
-  editMode = true; editId = m.id;
-  document.getElementById('modalTitle').textContent = '회의록 수정';
-  document.getElementById('fTitle').value = m.title || '';
-  document.getElementById('fDate').value = m.date ? m.date.substring(0,10) : '';
-  const attendees = Array.isArray(m.attendees) ? m.attendees.join(', ') : (m.attendees||'');
-  document.getElementById('fAttendees').value = attendees;
-  document.getElementById('fSummary').value = m.summary || '';
-  const decisions = Array.isArray(m.decisions) ? m.decisions.join('\n') : (m.decisions||'');
-  document.getElementById('fDecisions').value = decisions;
-  const actions = Array.isArray(m.actions) ? m.actions.join('\n') : (m.actions||'');
-  document.getElementById('fActions').value = actions;
+  if(!selectedId) return;
+  const m=meetings.find(x=>x.id===selectedId); if(!m) return;
+  editMode=true; editId=m.id;
+  document.getElementById('modalTitle').textContent='회의록 수정';
+  document.getElementById('fTitle').value=m.title||'';
+  document.getElementById('fDate').value=(m.date||'').substring(0,10);
+  document.getElementById('fAttendees').value=Array.isArray(m.attendees)?m.attendees.join(', '):(m.attendees||'');
+  document.getElementById('fSummary').value=m.summary||'';
+  document.getElementById('fDecisions').value=Array.isArray(m.decisions)?m.decisions.join('\n'):(m.decisions||'');
+  document.getElementById('fActions').value=Array.isArray(m.actions)?m.actions.join('\n'):(m.actions||'');
   document.getElementById('saveModal').classList.add('open');
 }
 
-function closeModal(id) {
-  document.getElementById(id).classList.remove('open');
-}
+function closeModal() { document.getElementById('saveModal').classList.remove('open'); }
 
+// ===== 저장 =====
 async function saveMeeting() {
-  const title = document.getElementById('fTitle').value.trim();
-  const date = document.getElementById('fDate').value;
-  if (!title) { showToast('회의 제목을 입력해 주세요', 'error'); return; }
-  if (!date) { showToast('회의 날짜를 선택해 주세요', 'error'); return; }
-
-  const attendeesRaw = document.getElementById('fAttendees').value;
-  const attendees = attendeesRaw.split(',').map(a=>a.trim()).filter(Boolean);
-  const decisionsRaw = document.getElementById('fDecisions').value;
-  const decisions = decisionsRaw.split('\n').map(d=>d.trim()).filter(Boolean);
-  const actionsRaw = document.getElementById('fActions').value;
-  const actions = actionsRaw.split('\n').map(a=>a.trim()).filter(Boolean);
-  const rawText = document.getElementById('transcriptArea').innerText.trim();
-
-  const payload = {
-    title,
-    date,
-    attendees,
-    summary: document.getElementById('fSummary').value.trim(),
-    decisions,
-    actions,
-    raw_text: editMode ? undefined : (rawText.includes('녹음 시작 후') ? '' : rawText)
+  const title=document.getElementById('fTitle').value.trim();
+  const date=document.getElementById('fDate').value;
+  if(!title){showToast('회의 제목을 입력해 주세요','error');return;}
+  if(!date){showToast('회의 날짜를 선택해 주세요','error');return;}
+  const payload={
+    title,date,
+    attendees:document.getElementById('fAttendees').value.split(',').map(a=>a.trim()).filter(Boolean),
+    summary:document.getElementById('fSummary').value.trim(),
+    decisions:document.getElementById('fDecisions').value.split('\n').map(d=>d.trim()).filter(Boolean),
+    actions:document.getElementById('fActions').value.split('\n').map(a=>a.trim()).filter(Boolean),
   };
-  if (editMode) delete payload.raw_text;
-
-  document.getElementById('btnSave').disabled = true;
-  document.getElementById('btnSave').textContent = '저장 중...';
-
+  if(!editMode) payload.raw_text = rawText;
+  document.getElementById('btnSave').disabled=true;
+  document.getElementById('btnSave').textContent='저장 중...';
   try {
-    let r;
-    if (editMode) {
-      r = await sbFetch(`/meeting_notes?id=eq.${editId}`, {
-        method: 'PATCH',
-        prefer: 'return=representation',
-        body: JSON.stringify(payload)
-      });
-    } else {
-      r = await sbFetch('/meeting_notes', {
-        method: 'POST',
-        prefer: 'return=representation',
-        body: JSON.stringify(payload)
-      });
-    }
-    if (!r.ok) {
-      const err = await r.json();
-      throw new Error(err.message || '저장 실패');
-    }
-    closeModal('saveModal');
-    showToast(editMode ? '✅ 수정되었습니다' : '✅ 저장되었습니다', 'success');
+    const r=await sbFetch(editMode?`/meeting_notes?id=eq.${editId}`:'/meeting_notes',{method:editMode?'PATCH':'POST',prefer:'return=representation',body:JSON.stringify(payload)});
+    if(!r.ok){const err=await r.json();throw new Error(err.message||'저장 실패');}
+    closeModal();
+    showToast(editMode?'✅ 수정되었습니다':'✅ 저장되었습니다','success');
+    rawText='';
     await loadMeetings();
-    const saved = await r.json();
-    if (saved && saved[0]) selectMeeting(saved[0].id);
-  } catch(e) {
-    showToast('저장 오류: ' + e.message, 'error');
-  }
-  document.getElementById('btnSave').disabled = false;
-  document.getElementById('btnSave').innerHTML = '💾 저장';
+    const saved=await r.json();
+    if(saved&&saved[0]) selectMeeting(saved[0].id);
+  } catch(e){showToast('오류: '+e.message,'error');}
+  document.getElementById('btnSave').disabled=false;
+  document.getElementById('btnSave').innerHTML='💾 저장';
 }
 
+// ===== 삭제 =====
 async function deleteSelected() {
-  if (!selectedId) return;
-  const m = meetings.find(x => x.id === selectedId);
-  if (!confirm(`"${m?.title}" 회의록을 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.`)) return;
+  if(!selectedId) return;
+  const m=meetings.find(x=>x.id===selectedId);
+  if(!confirm(`"${m?.title}" 회의록을 삭제하시겠습니까?`)) return;
   try {
-    const r = await sbFetch(`/meeting_notes?id=eq.${selectedId}`, { method: 'DELETE' });
-    if (!r.ok) throw new Error('삭제 실패');
-    selectedId = null;
-    document.getElementById('detailEmpty').style.display = 'block';
-    document.getElementById('detailContent').style.display = 'none';
-    showToast('🗑 삭제되었습니다', 'info');
+    const r=await sbFetch(`/meeting_notes?id=eq.${selectedId}`,{method:'DELETE'});
+    if(!r.ok) throw new Error('삭제 실패');
+    selectedId=null;
+    document.getElementById('detailEmpty').style.display='block';
+    document.getElementById('detailContent').style.display='none';
+    showToast('🗑 삭제되었습니다','info');
     await loadMeetings();
-  } catch(e) {
-    showToast('삭제 오류: ' + e.message, 'error');
-  }
+  } catch(e){showToast('오류: '+e.message,'error');}
 }
 
-function showToast(msg, type = 'info', duration = 2800) {
-  const c = document.getElementById('toastContainer');
-  const t = document.createElement('div');
-  t.className = 'toast ' + type;
-  t.textContent = msg;
-  c.appendChild(t);
-  requestAnimationFrame(() => { requestAnimationFrame(() => { t.classList.add('show'); }); });
-  setTimeout(() => {
-    t.classList.remove('show');
-    setTimeout(() => t.remove(), 300);
-  }, duration);
+// ===== 유틸 =====
+function showToast(msg,type='info',dur=2800) {
+  const c=document.getElementById('toastContainer'),t=document.createElement('div');
+  t.className='toast '+type;t.textContent=msg;c.appendChild(t);
+  requestAnimationFrame(()=>requestAnimationFrame(()=>t.classList.add('show')));
+  setTimeout(()=>{t.classList.remove('show');setTimeout(()=>t.remove(),300);},dur);
 }
-
-function escHtml(str) {
-  return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-document.getElementById('saveModal').addEventListener('click', function(e) {
-  if (e.target === this) closeModal('saveModal');
-});
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+document.getElementById('saveModal').addEventListener('click',function(e){if(e.target===this)closeModal();});
 </script>
 </body>
 </html>
