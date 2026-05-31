@@ -1527,13 +1527,12 @@ function renderDashCal(){
     weekDates.forEach((date,i)=>{
       const ds=`${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
       const isToday=ds===todayStr;
-      const weekend=isWeekendDate(date);
       const holiday=getHoliday(ds);
-      const ev=calEventsForDate(ds,events).sort((a,b)=>['휴가','외부','교육','출장'].indexOf(a.type)-['휴가','외부','교육','출장'].indexOf(b.type));
-      const bgColor=isToday?'rgba(244,114,182,.05)':holiday?'rgba(239,159,39,.05)':weekend?'rgba(0,0,0,.02)':'transparent';
-      const WDAYS=['일','월','화','수','목','금','토'];
-      const dayIdx=date.getDay();
+      const dayIdx=date.getDay(); // 0=일, 6=토
       const isWeekendDay=dayIdx===0||dayIdx===6;
+      const ev=calEventsForDate(ds,events).sort((a,b)=>['휴가','외부','교육','출장'].indexOf(a.type)-['휴가','외부','교육','출장'].indexOf(b.type));
+      const bgColor=isToday?'rgba(244,114,182,.05)':holiday?'rgba(239,159,39,.05)':isWeekendDay?'rgba(0,0,0,.02)':'transparent';
+      const WDAYS=['일','월','화','수','목','금','토'];
       const dayColor=isWeekendDay||holiday?'#dc2626':'var(--muted)';
       const dateColor=isToday?'var(--c-schedule)':isWeekendDay||holiday?'#dc2626':'var(--text)';
       html+=`<div style="padding:10px 8px;border-right:0.5px solid var(--border);min-height:140px;max-height:140px;overflow:hidden;background:${bgColor};box-sizing:border-box;">
@@ -1543,9 +1542,10 @@ function renderDashCal(){
         ${(!isWeekendDay&&!holiday)?ev.map(e=>{
           const t=e.type||'기타';
           const nm=e.name||e.title||'?';
+          const detail=e.detail||'-';
           const key='cp'+(calPillIdx++);
-          CAL_PILL_DATA[key]={title:`${nm} · ${t==='외부'?'외부일정':t}`,body:`<div style="font-size:12px;color:var(--muted);">${e.detail||'-'}</div>`};
-          return `<div style="font-size:10px;padding:2px 6px;border-radius:4px;margin-bottom:3px;cursor:default;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:${TYPE_BG_MAP[t]||'#eee'};color:${TYPE_TEXT_MAP[t]||'#666'};"
+          CAL_PILL_DATA[key]={title:`${nm} · ${t==='외부'?'외부일정':t}`,body:`<div style="font-size:12px;color:var(--muted);">${detail}</div>`};
+          return `<div style="font-size:10px;padding:2px 6px;border-radius:4px;margin-bottom:3px;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:${TYPE_BG_MAP[t]||'#eee'};color:${TYPE_TEXT_MAP[t]||'#666'};"
             onmouseenter="showCalTip(event,'${key}')" onmouseleave="hideCalTip()">${nm}</div>`;
         }).join(''):''}
       </div>`;
