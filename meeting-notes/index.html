@@ -642,10 +642,18 @@ function startRecording() {
     }
     updateTranscriptDisplay();
   };
-  recognition.onerror = (e) => {
-    if (e.error === 'not-allowed') showToast('마이크 권한이 필요합니다', 'error');
-    else if (e.error !== 'aborted') showToast('음성 인식 오류: ' + e.error, 'error');
-  };
+recognition.onerror = (e) => {
+  console.log('STT 에러:', e.error);
+  showToast('음성 인식 오류: ' + e.error, 'error');
+  isRecording = false;
+  isPaused = false;
+  stopTimer();
+  document.getElementById('recLabel').textContent = '오류 발생';
+  document.getElementById('recDot').style.background = 'var(--red)';
+  document.getElementById('btnStart').disabled = false;
+  document.getElementById('btnPause').disabled = true;
+  document.getElementById('btnStop').disabled = true;
+};
   recognition.onend = () => {
     if (isRecording && !isPaused) {
       recognition.start();
