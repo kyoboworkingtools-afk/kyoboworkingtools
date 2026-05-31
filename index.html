@@ -6,6 +6,46 @@
 <title>업무 툴 포털</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style id="authStyle">
+.auth-wrap{position:fixed;inset:0;background:#f4f6f9;display:flex;align-items:center;justify-content:center;z-index:9999;}
+.auth-box{background:#fff;border-radius:16px;padding:36px 32px;width:100%;max-width:400px;box-shadow:0 8px 32px rgba(0,0,0,.1);}
+.auth-logo{display:flex;align-items:center;gap:8px;margin-bottom:28px;}
+.auth-logo .dot{width:8px;height:8px;border-radius:50%;background:#1a6fd4;}
+.auth-logo span{font-size:16px;font-weight:700;color:#1a1f2e;}
+.auth-title{font-size:18px;font-weight:600;color:#1a1f2e;margin-bottom:6px;}
+.auth-sub{font-size:13px;color:#5a6478;margin-bottom:24px;}
+.auth-field{margin-bottom:14px;}
+.auth-field label{display:block;font-size:12px;color:#5a6478;margin-bottom:5px;font-weight:500;}
+.auth-field-row{display:flex;align-items:center;border:1px solid #e2e6ed;border-radius:8px;overflow:hidden;transition:border-color .2s;}
+.auth-field-row:focus-within{border-color:#1a6fd4;box-shadow:0 0 0 3px rgba(26,111,212,.08);}
+.auth-field-row input{flex:1;padding:10px 12px;border:none;outline:none;font-size:13px;font-family:'Noto Sans KR',sans-serif;background:transparent;color:#1a1f2e;}
+.auth-field-row .domain{padding:10px 12px 10px 0;font-size:13px;color:#9aa0b0;white-space:nowrap;}
+.auth-field input.plain{width:100%;padding:10px 12px;border:1px solid #e2e6ed;border-radius:8px;outline:none;font-size:13px;font-family:'Noto Sans KR',sans-serif;color:#1a1f2e;transition:border-color .2s;}
+.auth-field input.plain:focus{border-color:#1a6fd4;box-shadow:0 0 0 3px rgba(26,111,212,.08);}
+.auth-btn{width:100%;padding:12px;background:#1a6fd4;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;font-family:'Noto Sans KR',sans-serif;margin-top:8px;transition:background .2s;}
+.auth-btn:hover{background:#1558b0;}
+.auth-btn:disabled{background:#9aa0b0;cursor:not-allowed;}
+.auth-err{font-size:12px;color:#dc2626;margin-top:8px;text-align:center;min-height:18px;}
+.auth-ok{font-size:12px;color:#16a34a;margin-top:8px;text-align:center;min-height:18px;}
+.auth-link{text-align:center;margin-top:16px;font-size:12px;color:#5a6478;}
+.auth-link a{color:#1a6fd4;cursor:pointer;text-decoration:none;font-weight:500;}
+.auth-link a:hover{text-decoration:underline;}
+.auth-pending{text-align:center;padding:20px 0;}
+.auth-pending .icon{font-size:48px;margin-bottom:12px;}
+/* 어드민 */
+.admin-wrap{padding:24px;}
+.admin-table{width:100%;border-collapse:collapse;font-size:13px;}
+.admin-table th{padding:10px 12px;text-align:left;font-size:11px;color:#5a6478;border-bottom:1px solid #e2e6ed;font-weight:500;}
+.admin-table td{padding:10px 12px;border-bottom:0.5px solid #e2e6ed;color:#1a1f2e;}
+.status-badge{font-size:10px;padding:2px 8px;border-radius:12px;}
+.status-pending{background:#FEF3C7;color:#92400E;}
+.status-approved{background:#D1FAE5;color:#065F46;}
+.status-rejected{background:#FEE2E2;color:#991B1B;}
+.status-admin{background:#EDE9FE;color:#4C1D95;}
+.perm-check{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0;}
+.perm-item{display:flex;align-items:center;gap:4px;font-size:11px;}
+</style>
 <style>
 :root {
   --bg:#f4f6f9;--sidebar-bg:#ffffff;--surface:#ffffff;--surface2:#f0f2f5;
@@ -225,6 +265,88 @@ tfoot td{background:var(--surface2);font-weight:700;font-size:11px;}
 <body>
 
 <!-- TOPBAR -->
+<!-- ── 인증 화면 ── -->
+<div class="auth-wrap" id="authWrap">
+  <!-- 로그인 -->
+  <div class="auth-box" id="authLogin">
+    <div class="auth-logo"><div class="dot"></div><span>업무 포털</span></div>
+    <div class="auth-title">로그인</div>
+    <div class="auth-sub">사번과 비밀번호로 로그인하세요</div>
+    <div class="auth-field">
+      <label>사번</label>
+      <input class="plain" type="text" id="loginId" placeholder="사번 입력" maxlength="10" oninput="this.value=this.value.replace(/[^0-9a-zA-Z]/g,'')">
+    </div>
+    <div class="auth-field">
+      <label>비밀번호</label>
+      <input class="plain" type="password" id="loginPw" placeholder="비밀번호 입력" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <div class="auth-err" id="loginErr"></div>
+    <button class="auth-btn" onclick="doLogin()" id="loginBtn">로그인</button>
+    <div class="auth-link">
+      계정이 없으신가요? <a onclick="showAuth('signup')">회원가입</a>
+      &nbsp;·&nbsp; <a onclick="showAuth('reset')">비밀번호 찾기</a>
+    </div>
+  </div>
+
+  <!-- 회원가입 -->
+  <div class="auth-box" id="authSignup" style="display:none;">
+    <div class="auth-logo"><div class="dot"></div><span>업무 포털</span></div>
+    <div class="auth-title">회원가입</div>
+    <div class="auth-sub">가입 후 관리자 승인 후 이용 가능합니다</div>
+    <div class="auth-field">
+      <label>이름</label>
+      <input class="plain" type="text" id="signName" placeholder="실명 입력">
+    </div>
+    <div class="auth-field">
+      <label>사번 (숫자 5자리)</label>
+      <input class="plain" type="text" id="signId" placeholder="12345" maxlength="5" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+    </div>
+    <div class="auth-field">
+      <label>이메일</label>
+      <div class="auth-field-row">
+        <input type="text" id="signEmail" placeholder="아이디 입력">
+        <span class="domain">@kyobo.com</span>
+      </div>
+    </div>
+    <div class="auth-field">
+      <label>비밀번호 (8자 이상)</label>
+      <input class="plain" type="password" id="signPw" placeholder="비밀번호 입력">
+    </div>
+    <div class="auth-field">
+      <label>비밀번호 확인</label>
+      <input class="plain" type="password" id="signPw2" placeholder="비밀번호 재입력" onkeydown="if(event.key==='Enter')doSignup()">
+    </div>
+    <div class="auth-err" id="signErr"></div>
+    <button class="auth-btn" onclick="doSignup()" id="signBtn">회원가입</button>
+    <div class="auth-link"><a onclick="showAuth('login')">← 로그인으로 돌아가기</a></div>
+  </div>
+
+  <!-- 비밀번호 찾기 -->
+  <div class="auth-box" id="authReset" style="display:none;">
+    <div class="auth-logo"><div class="dot"></div><span>업무 포털</span></div>
+    <div class="auth-title">비밀번호 재설정</div>
+    <div class="auth-sub">사번을 입력하면 등록된 이메일로 링크를 보내드립니다</div>
+    <div class="auth-field">
+      <label>사번</label>
+      <input class="plain" type="text" id="resetId" placeholder="사번 입력" maxlength="10" onkeydown="if(event.key==='Enter')doReset()">
+    </div>
+    <div class="auth-err" id="resetErr"></div>
+    <div class="auth-ok" id="resetOk"></div>
+    <button class="auth-btn" onclick="doReset()" id="resetBtn">재설정 링크 발송</button>
+    <div class="auth-link"><a onclick="showAuth('login')">← 로그인으로 돌아가기</a></div>
+  </div>
+
+  <!-- 승인 대기 -->
+  <div class="auth-box" id="authPending" style="display:none;">
+    <div class="auth-pending">
+      <div class="icon">⏳</div>
+      <div class="auth-title">승인 대기 중</div>
+      <div class="auth-sub" style="margin-top:8px;">가입 신청이 완료됐어요.<br>관리자 승인 후 이용 가능합니다.</div>
+      <button class="auth-btn" style="margin-top:24px;" onclick="doLogout()">로그아웃</button>
+    </div>
+  </div>
+</div>
+
 <div class="topbar">
   <div class="menu-btn" onclick="toggleSidebar()">☰</div>
   <div class="topbar-logo"><span class="dot"></span>업무 포털</div>
@@ -235,7 +357,8 @@ tfoot td{background:var(--surface2);font-weight:700;font-size:11px;}
   </div>
   <div class="topbar-right">
     <span class="topbar-date" id="topDate"></span>
-    <span class="topbar-user">음반사업팀 · 대리</span>
+    <span class="topbar-user" id="topbarUser" style="display:none;"></span>
+    <button onclick="doLogout()" id="logoutBtn" style="display:none;padding:5px 10px;border:1px solid #e2e6ed;border-radius:20px;background:transparent;font-size:11px;color:#5a6478;cursor:pointer;font-family:'Noto Sans KR',sans-serif;">로그아웃</button>
   </div>
 </div>
 
@@ -283,6 +406,10 @@ tfoot td{background:var(--surface2);font-weight:700;font-size:11px;}
       <span class="nav-dot" style="background:var(--accent)"></span>모든 툴
       <span class="nav-count" id="cnt-all">0</span>
     </div>
+    <div class="sidebar-divider"></div>
+    <div class="nav-item" style="--nav-color:#7c3aed;display:none;" onclick="selectNav('admin',this)" id="nav-admin">
+      <span class="nav-dot" style="background:#7c3aed"></span>⚙️ 회원 관리
+    </div>
   </nav>
 
   <div class="main" id="mainArea"></div>
@@ -329,7 +456,239 @@ let recentIds=['t1','t2','t3'];
 let currentNav='dash-inv';
 
 const SUPA_URL='https://ftfpicvwprpcuhstteas.supabase.co';
-const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ0ZnBpY3Z3cHJwY3Voc3R0ZWFzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwNDg2NTMsImV4cCI6MjA5NTYyNDY1M30.6G9NwSmzSjSX1ZIu_h0TeoNDiRuQ6kOtrQBCu0R1oMk'; // Supabase → API Keys → anon public 키 입력
+const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ0ZnBpY3Z3cHJwY3Voc3R0ZWFzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwNDg2NTMsImV4cCI6MjA5NTYyNDY1M30.6G9NwSmzSjSX1ZIu_h0TeoNDiRuQ6kOtrQBCu0R1oMk';
+
+// ── Supabase 클라이언트 ──
+const _supa = supabase.createClient(SUPA_URL, SUPA_KEY);
+
+let _currentUser = null;
+let _currentProfile = null;
+
+const MENU_LIST = [
+  {key:'재고현황',   label:'재고 현황'},
+  {key:'일정현황',   label:'일정 현황'},
+  {key:'음반_가격변경', label:'음반 - 가격변경'},
+  {key:'음반_반품관리', label:'음반 - 반품관리'},
+  {key:'기타_바코드', label:'기타 - 바코드'},
+  {key:'기타_회의록', label:'기타 - 회의록'},
+];
+
+// ── 인증 초기화 ──
+async function initAuth(){
+  const {data:{session}} = await _supa.auth.getSession();
+  if(session){
+    _currentUser = session.user;
+    await loadProfile();
+  } else {
+    showAuthWrap();
+  }
+}
+
+async function loadProfile(){
+  const {data,error} = await _supa.from('users').select('*').eq('id',_currentUser.id).single();
+  if(error||!data){ showAuthWrap(); return; }
+  _currentProfile = data;
+  if(data.role==='pending'){ showPending(); return; }
+  hideAuthWrap();
+  updateTopbarUser();
+  applyPermissions();
+}
+
+function updateTopbarUser(){
+  const el=document.getElementById('topbarUser');
+  const lb=document.getElementById('logoutBtn');
+  if(el){ el.textContent=`${_currentProfile.employee_id}님 로그인 중`; el.style.display=''; }
+  if(lb) lb.style.display='';
+}
+
+function applyPermissions(){
+  const perms = _currentProfile?.permissions || {};
+  const role = _currentProfile?.role;
+  const isAdmin = role==='admin'||role==='superadmin';
+  // 어드민 메뉴 표시
+  const adminNav = document.getElementById('nav-admin');
+  if(adminNav) adminNav.style.display = isAdmin ? '' : 'none';
+  // 메뉴별 권한 적용 (어드민은 전체 허용)
+  if(!isAdmin){
+    // 재고현황
+    const invNav=document.querySelector('[onclick*="dash-inv"]');
+    if(invNav) invNav.style.display=perms['재고현황']!==false?'':'none';
+    // 일정현황
+    const calNav=document.querySelector('[onclick*="dash-cal"]');
+    if(calNav) calNav.style.display=perms['일정현황']!==false?'':'none';
+  }
+}
+
+// ── 화면 전환 ──
+function showAuthWrap(){ document.getElementById('authWrap').style.display='flex'; }
+function hideAuthWrap(){ document.getElementById('authWrap').style.display='none'; }
+function showAuth(page){
+  ['login','signup','reset','pending'].forEach(p=>{
+    document.getElementById('auth'+p.charAt(0).toUpperCase()+p.slice(1)).style.display='none';
+  });
+  document.getElementById('auth'+page.charAt(0).toUpperCase()+page.slice(1)).style.display='block';
+}
+function showPending(){ showAuthWrap(); showAuth('pending'); }
+
+// ── 로그인 ──
+async function doLogin(){
+  const eid = document.getElementById('loginId').value.trim();
+  const pw  = document.getElementById('loginPw').value;
+  const errEl = document.getElementById('loginErr');
+  const btn = document.getElementById('loginBtn');
+  if(!eid||!pw){ errEl.textContent='사번과 비밀번호를 입력해주세요.'; return; }
+  errEl.textContent=''; btn.disabled=true; btn.textContent='로그인 중...';
+  // 사번으로 이메일 조회
+  const {data:profile} = await _supa.from('users').select('email').eq('employee_id',eid).single();
+  if(!profile){ errEl.textContent='등록되지 않은 사번입니다.'; btn.disabled=false; btn.textContent='로그인'; return; }
+  const {data,error} = await _supa.auth.signInWithPassword({email:profile.email, password:pw});
+  if(error){ errEl.textContent='비밀번호가 올바르지 않습니다.'; btn.disabled=false; btn.textContent='로그인'; return; }
+  _currentUser = data.user;
+  await loadProfile();
+  btn.disabled=false; btn.textContent='로그인';
+}
+
+// ── 회원가입 ──
+async function doSignup(){
+  const name  = document.getElementById('signName').value.trim();
+  const eid   = document.getElementById('signId').value.trim();
+  const emailId = document.getElementById('signEmail').value.trim();
+  const pw    = document.getElementById('signPw').value;
+  const pw2   = document.getElementById('signPw2').value;
+  const errEl = document.getElementById('signErr');
+  const btn   = document.getElementById('signBtn');
+  if(!name||!eid||!emailId||!pw){ errEl.textContent='모든 항목을 입력해주세요.'; return; }
+  if(eid.length!==5){ errEl.textContent='사번은 숫자 5자리로 입력해주세요.'; return; }
+  if(pw.length<8){ errEl.textContent='비밀번호는 8자 이상이어야 합니다.'; return; }
+  if(pw!==pw2){ errEl.textContent='비밀번호가 일치하지 않습니다.'; return; }
+  errEl.textContent=''; btn.disabled=true; btn.textContent='가입 중...';
+  const email = emailId+'@kyobo.com';
+  // 사번 중복 확인
+  const {data:dup} = await _supa.from('users').select('id').eq('employee_id',eid).single();
+  if(dup){ errEl.textContent='이미 사용 중인 사번입니다.'; btn.disabled=false; btn.textContent='회원가입'; return; }
+  const {data,error} = await _supa.auth.signUp({email, password:pw});
+  if(error){ errEl.textContent=error.message; btn.disabled=false; btn.textContent='회원가입'; return; }
+  // users 테이블에 저장
+  await _supa.from('users').insert({
+    id: data.user.id, name, employee_id:eid, email,
+    role:'pending',
+    permissions:{'재고현황':false,'일정현황':false,'음반_가격변경':false,'음반_반품관리':false,'기타_바코드':false,'기타_회의록':false}
+  });
+  _currentUser = data.user;
+  showPending();
+  btn.disabled=false; btn.textContent='회원가입';
+}
+
+// ── 비밀번호 재설정 ──
+async function doReset(){
+  const eid = document.getElementById('resetId').value.trim();
+  const errEl = document.getElementById('resetErr');
+  const okEl  = document.getElementById('resetOk');
+  const btn   = document.getElementById('resetBtn');
+  if(!eid){ errEl.textContent='사번을 입력해주세요.'; return; }
+  errEl.textContent=''; okEl.textContent=''; btn.disabled=true; btn.textContent='발송 중...';
+  const {data:profile} = await _supa.from('users').select('email').eq('employee_id',eid).single();
+  if(!profile){ errEl.textContent='등록되지 않은 사번입니다.'; btn.disabled=false; btn.textContent='재설정 링크 발송'; return; }
+  await _supa.auth.resetPasswordForEmail(profile.email, {redirectTo: window.location.href});
+  okEl.textContent='이메일로 재설정 링크를 발송했습니다.';
+  btn.disabled=false; btn.textContent='재설정 링크 발송';
+}
+
+// ── 로그아웃 ──
+async function doLogout(){
+  await _supa.auth.signOut();
+  _currentUser=null; _currentProfile=null;
+  document.getElementById('topbarUser').style.display='none';
+  document.getElementById('logoutBtn').style.display='none';
+  showAuth('login');
+  showAuthWrap();
+}
+
+// ── 어드민 페이지 ──
+async function renderAdminPage(){
+  const el=document.getElementById('mainArea');
+  el.innerHTML=`<div style="animation:fadeUp .3s ease;padding:24px;">
+    <div class="page-header" style="--page-color:#7c3aed">
+      <div><div class="page-category-tag">ADMIN</div><div class="page-title">회원 관리</div></div>
+    </div>
+    <div id="adminTabs" style="display:flex;gap:8px;margin-bottom:20px;">
+      <button onclick="loadAdminTab('pending')" style="padding:6px 16px;border-radius:6px;border:1px solid #7c3aed;background:#7c3aed;color:#fff;font-size:12px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;">승인 대기</button>
+      <button onclick="loadAdminTab('all')" style="padding:6px 16px;border-radius:6px;border:1px solid #e2e6ed;background:transparent;color:#5a6478;font-size:12px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;">전체 회원</button>
+    </div>
+    <div id="adminContent"></div>
+  </div>`;
+  loadAdminTab('pending');
+}
+
+async function loadAdminTab(tab){
+  const el=document.getElementById('adminContent');
+  el.innerHTML='<div style="color:#9aa0b0;font-size:13px;padding:20px;">불러오는 중...</div>';
+  let query=_supa.from('users').select('*').order('created_at',{ascending:false});
+  if(tab==='pending') query=query.eq('role','pending');
+  const {data,error}=await query;
+  if(error||!data){ el.innerHTML='<div style="color:#dc2626;">오류가 발생했습니다.</div>'; return; }
+  if(!data.length){ el.innerHTML='<div style="color:#9aa0b0;font-size:13px;padding:20px;">해당 회원이 없습니다.</div>'; return; }
+  el.innerHTML=`<div style="background:#fff;border-radius:10px;border:1px solid #e2e6ed;overflow:auto;">
+    <table class="admin-table">
+      <thead><tr>
+        <th>이름</th><th>사번</th><th>이메일</th><th>상태</th><th>메뉴 권한</th><th>관리</th>
+      </tr></thead>
+      <tbody>
+        ${data.map(u=>`<tr id="urow-${u.id}">
+          <td style="font-weight:500">${u.name}</td>
+          <td style="font-family:monospace">${u.employee_id}</td>
+          <td style="font-size:12px;color:#5a6478">${u.email}</td>
+          <td><span class="status-badge status-${u.role==='pending'?'pending':u.role==='admin'||u.role==='superadmin'?'admin':'approved'}">${u.role==='pending'?'대기':u.role==='superadmin'?'슈퍼관리자':u.role==='admin'?'관리자':'승인'}</span></td>
+          <td>
+            <div class="perm-check">
+              ${MENU_LIST.map(m=>`<label class="perm-item">
+                <input type="checkbox" ${(u.permissions||{})[m.key]?'checked':''} onchange="updatePerm('${u.id}','${m.key}',this.checked)"> ${m.label}
+              </label>`).join('')}
+            </div>
+          </td>
+          <td>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;">
+              ${u.role==='pending'?`<button onclick="approveUser('${u.id}')" style="padding:4px 10px;border-radius:6px;background:#16a34a;color:#fff;border:none;font-size:11px;cursor:pointer;">승인</button>
+              <button onclick="rejectUser('${u.id}')" style="padding:4px 10px;border-radius:6px;background:#dc2626;color:#fff;border:none;font-size:11px;cursor:pointer;">거절</button>`:''}
+              ${u.role==='member'&&_currentProfile?.role==='superadmin'?`<button onclick="setAdmin('${u.id}')" style="padding:4px 10px;border-radius:6px;background:#7c3aed;color:#fff;border:none;font-size:11px;cursor:pointer;">관리자 지정</button>`:''}
+              ${u.role==='admin'&&_currentProfile?.role==='superadmin'?`<button onclick="removeAdmin('${u.id}')" style="padding:4px 10px;border-radius:6px;background:#5a6478;color:#fff;border:none;font-size:11px;cursor:pointer;">관리자 해제</button>`:''}
+            </div>
+          </td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+  </div>`;
+}
+
+async function updatePerm(uid,key,val){
+  const {data}=await _supa.from('users').select('permissions').eq('id',uid).single();
+  const perms={...(data?.permissions||{}),[key]:val};
+  await _supa.from('users').update({permissions:perms}).eq('id',uid);
+}
+
+async function approveUser(uid){
+  await _supa.from('users').update({role:'member',approved_at:new Date().toISOString(),approved_by:_currentUser.id}).eq('id',uid);
+  loadAdminTab('pending');
+}
+
+async function rejectUser(uid){
+  if(!confirm('이 회원의 가입을 거절하시겠습니까?'))return;
+  await _supa.from('users').update({role:'rejected'}).eq('id',uid);
+  loadAdminTab('pending');
+}
+
+async function setAdmin(uid){
+  await _supa.from('users').update({role:'admin'}).eq('id',uid);
+  loadAdminTab('all');
+}
+
+async function removeAdmin(uid){
+  await _supa.from('users').update({role:'member'}).eq('id',uid);
+  loadAdminTab('all');
+}
+
+// 앱 시작
+initAuth();
 
 let dashInvData={branch:[],genre:[],supplier:[]};
 let dashCalData=null;
@@ -343,8 +702,10 @@ const todayD=new Date();
 
 async function supaFetch(table,params=''){
   try{
+    const {data:{session}}=await _supa.auth.getSession();
+    const token=session?.access_token||SUPA_KEY;
     const res=await fetch(`${SUPA_URL}/rest/v1/${table}?${params}&order=date.desc`,{
-      headers:{'apikey':SUPA_KEY,'Authorization':`Bearer ${SUPA_KEY}`}
+      headers:{'apikey':SUPA_KEY,'Authorization':`Bearer ${token}`}
     });
     return res.ok?await res.json():[];
   }catch{return [];}
@@ -1362,6 +1723,7 @@ function selectNav(key,el){
   }
   if(key==='dash-inv')renderDashInv();
   else if(key==='dash-cal')renderDashCal();
+  else if(key==='admin')renderAdminPage();
   else renderToolPage(key);
   if(window.innerWidth<768)closeSidebar();
 }
