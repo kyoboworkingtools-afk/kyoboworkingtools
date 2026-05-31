@@ -1531,10 +1531,8 @@ function renderDashCal(){
       const holiday=getHoliday(ds);
       const ev=calEventsForDate(ds,events).sort((a,b)=>['휴가','외부','교육','출장'].indexOf(a.type)-['휴가','외부','교육','출장'].indexOf(b.type));
       const bgColor=isToday?'rgba(244,114,182,.05)':holiday?'rgba(239,159,39,.05)':weekend?'rgba(0,0,0,.02)':'transparent';
-      const dayColor=weekend||holiday?'#dc2626':'var(--muted)';
-      const dateColor=isToday?'var(--c-schedule)':weekend||holiday?'#dc2626':'var(--text)';
       const WDAYS=['일','월','화','수','목','금','토'];
-      const dayIdx=date.getDay(); // 0=일,1=월...6=토
+      const dayIdx=date.getDay();
       const isWeekendDay=dayIdx===0||dayIdx===6;
       const dayColor=isWeekendDay||holiday?'#dc2626':'var(--muted)';
       const dateColor=isToday?'var(--c-schedule)':isWeekendDay||holiday?'#dc2626':'var(--text)';
