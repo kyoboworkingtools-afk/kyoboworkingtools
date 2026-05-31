@@ -380,6 +380,10 @@ tfoot td{background:var(--surface2);font-weight:700;font-size:11px;}
       <span class="nav-dot" style="background:var(--c-music)"></span>음반
       <span class="nav-count" id="cnt-music">0</span>
     </div>
+    <div class="nav-item" style="--nav-color:#0891b2;" onclick="selectNav('munge',this)" id="nav-munge">
+      <span class="nav-dot" style="background:#0891b2"></span>문구
+      <span class="nav-count" id="cnt-munge">0</span>
+    </div>
     <div class="sidebar-section-label" style="margin-top:14px;">기타</div>
     <div class="nav-item" style="--nav-color:var(--c-etc);" onclick="toggleEtc(this)" id="nav-etc">
       <span class="nav-dot" style="background:var(--c-etc)"></span>기타
@@ -695,7 +699,7 @@ let dashCalData=null;
 let dashInvLoading=false,dashCalLoading=false;
 let invTab='branch';
 let invChannels=['온라인','오프라인','기타'];
-let invTypes=['상설','임시','미판매'];
+let invTypes=[];  // 빈 배열 = 전체 선택
 let invBranches=[];  // 빈 배열 = 전체 선택
 let calView='week';
 const todayD=new Date();
@@ -782,9 +786,14 @@ async function loadCalendar(){
   dashCalLoading=true;if(currentNav==='dash-cal')renderDashCal();
   const events=await supaFetch('schedules','select=*');
   dashCalData={events:events.map(e=>({
-    id:e.id,title:e.detail,date:e.date,
+    id:e.id,
+    title:e.name||e.detail||'',   // 이름
+    name:e.name||'',
+    detail:e.detail||e.name||'',  // 사유
+    date:e.date,
     startTime:null,endTime:null,allDay:true,
-    calendar:e.sheet_month||'팀',type:e.type||'기타'
+    calendar:e.sheet_month||'팀',
+    type:e.type||'기타'
   }))};
   dashCalLoading=false;if(currentNav==='dash-cal')renderDashCal();
 }
@@ -890,8 +899,8 @@ function renderDashInv(){
 
 function getBranchFiltered(data, dateStr){
   return data.filter(d=>d.date===dateStr
-    &&invChannels.includes(d.type_a||'기타')
-    &&invTypes.includes(d.type_b||'기타')
+    &&(invChannels.length===0||invChannels.includes(d.type_a||'기타'))
+    &&(invTypes.length===0||invTypes.includes(d.type_b||'기타'))
     &&(invBranches.length===0||invBranches.includes(d.branch)));
 }
 
@@ -905,6 +914,7 @@ function renderBranchTab(){
   const allChannels=[...new Set(data.map(d=>d.type_a).filter(Boolean))].sort();
   const allTypes=[...new Set(data.map(d=>d.type_b).filter(Boolean))].sort();
   const allBranches=[...new Set(data.map(d=>d.branch).filter(Boolean))].sort();
+  if(invTypes.length===0) invTypes=[...allTypes]; // 빈 배열이면 전체로 초기화
   if(invBranches.length===0) invBranches=[];
 
   const latestFiltered=getBranchFiltered(data,latest);
@@ -989,19 +999,19 @@ function renderBranchTab(){
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
     <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px;">
       <div style="font-size:11px;font-weight:600;color:var(--muted);margin-bottom:6px;">채널별 재고금액 비율</div>
-      <canvas id="chartTypeA" height="75"></canvas>
+      <canvas id="chartTypeA" height="60"></canvas>
     </div>
     <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px;">
       <div style="font-size:11px;font-weight:600;color:var(--muted);margin-bottom:6px;">영업점 Top 10</div>
-      <canvas id="chartBranch" height="200"></canvas>
+      <canvas id="chartBranch" height="160"></canvas>
     </div>
     <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px;">
       <div style="font-size:11px;font-weight:600;color:var(--muted);margin-bottom:6px;">주간 재고 추이</div>
-      <canvas id="chartLine" height="110"></canvas>
+      <canvas id="chartLine" height="90"></canvas>
     </div>
     <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px;">
       <div style="font-size:11px;font-weight:600;color:var(--muted);margin-bottom:6px;">전월마감 대비 증감 (백만원)</div>
-      <canvas id="chartWater" height="200"></canvas>
+      <canvas id="chartWater" height="160"></canvas>
     </div>
   </div>
 
@@ -1419,18 +1429,22 @@ function renderDashCal(){
 
   const todayStr=`${todayD.getFullYear()}-${String(todayD.getMonth()+1).padStart(2,'0')}-${String(todayD.getDate()).padStart(2,'0')}`;
   const todayEvents=calEventsForDate(todayStr,events);
-  const typeCount={휴가:[],외부:[],교육:[],출장:[]};
+  const typeCount={휴가:[],외부:[],교육:[],출장:[],기타:[]};
   todayEvents.forEach(e=>{
-    const t=e.type||'외부';
-    if(typeCount[t])typeCount[t].push(e.title||e.name||'');
+    const t=e.type||'기타';
+    if(typeCount[t]) typeCount[t].push({name:e.name||e.title||'', detail:e.detail||''});
+    else typeCount['기타'].push({name:e.name||e.title||'', detail:e.detail||''});
   });
   const atWork=15-todayEvents.length;
+  const atWorkNames=[];
+  // 정상근무 = 전체팀원 - 오늘일정있는팀원 (Supabase 팀원 목록 기반)
   window._calTodayEvents=todayEvents;
 
-  // 저장용 카드 데이터
   const SUMMARY_DATA={};
-  SUMMARY_DATA['근무']={title:`정상 근무 (${atWork}명)`,names:[]};
-  Object.entries(typeCount).forEach(([t,names])=>{SUMMARY_DATA[t]={title:`${t} (${names.length}명)`,names};});
+  SUMMARY_DATA['근무']={title:`정상 근무 (${atWork}명)`, items:[]};
+  Object.entries(typeCount).forEach(([t,items])=>{
+    SUMMARY_DATA[t]={title:`${t} (${items.length}명)`, items};
+  });
 
   let html=`<div style="animation:fadeUp .3s ease">
   <div class="page-header" style="--page-color:var(--c-schedule)">
@@ -1453,7 +1467,7 @@ function renderDashCal(){
 
   // 요약 카드
   html+=`<div class="section-label" style="font-size:11px;color:var(--muted);margin-bottom:8px;">오늘 일정 인원</div>
-  <div class="summary-row" style="margin-bottom:16px;" id="calSummaryCards">
+  <div class="summary-row" style="margin-bottom:16px;">
     <div class="sum-card" style="border-top:2px solid var(--accent);cursor:pointer;" onmouseenter="showCalSummaryTip(event,'근무')" onmouseleave="hideCalTip()">
       <div class="sum-num" style="color:var(--accent)">${atWork}</div><div class="sum-label">정상 근무</div></div>
     <div class="sum-card" style="border-top:2px solid #EF9F27;cursor:pointer;" onmouseenter="showCalSummaryTip(event,'휴가')" onmouseleave="hideCalTip()">
@@ -1473,17 +1487,18 @@ function renderDashCal(){
     html+=`<div style="text-align:center;padding:16px;font-size:13px;color:var(--muted);">오늘 외부 일정 없음 — 전원 근무</div>`;
   } else {
     html+=todayEvents.map(e=>{
-      const t=e.type||'외부';
-      const mc=calMemberColor(e.title||e.name||'');
+      const t=e.type||'기타';
+      const mc=calMemberColor(e.name||e.title||'');
+      const nm=e.name||e.title||'?';
+      const detail=e.detail||'';
       const showMap=(t==='외부'||t==='출장'||t==='교육');
-      const mapUrl=naverMapUrl(e.detail||e.text||'');
+      const mapUrl=naverMapUrl(detail);
       return `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:0.5px solid var(--border);">
-        <div style="width:30px;height:30px;border-radius:50%;background:${mc}22;color:${mc};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;flex-shrink:0;">${(e.title||e.name||'?')[0]}</div>
-        <div style="font-size:13px;font-weight:500;min-width:60px;">${e.title||e.name}</div>
-        <div style="font-size:12px;color:var(--muted);flex:1;">${e.detail||''}</div>
-        ${showMap?`<a href="${mapUrl}" target="_blank" rel="noopener" title="네이버 지도로 길찾기"
-          style="display:flex;align-items:center;gap:3px;padding:3px 8px;border-radius:6px;background:rgba(3,199,90,.1);color:#03C75A;font-size:10px;text-decoration:none;flex-shrink:0;border:0.5px solid rgba(3,199,90,.3);">
-          📍 지도</a>`:''}
+        <div style="width:30px;height:30px;border-radius:50%;background:${mc}22;color:${mc};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;flex-shrink:0;">${nm[0]}</div>
+        <div style="font-size:13px;font-weight:500;min-width:60px;">${nm}</div>
+        <div style="font-size:12px;color:var(--muted);flex:1;">${detail}</div>
+        ${showMap?`<a href="${mapUrl}" target="_blank" rel="noopener"
+          style="display:flex;align-items:center;gap:3px;padding:3px 8px;border-radius:6px;background:rgba(3,199,90,.1);color:#03C75A;font-size:10px;text-decoration:none;flex-shrink:0;border:0.5px solid rgba(3,199,90,.3);">📍 지도</a>`:''}
         <span style="font-size:10px;padding:2px 8px;border-radius:12px;background:${TYPE_BG_MAP[t]||'#eee'};color:${TYPE_TEXT_MAP[t]||'#666'};flex-shrink:0;">${t==='외부'?'외부일정':t}</span>
       </div>`;
     }).join('');
@@ -1519,16 +1534,21 @@ function renderDashCal(){
       const dayColor=weekend||holiday?'#dc2626':'var(--muted)';
       const dateColor=isToday?'var(--c-schedule)':weekend||holiday?'#dc2626':'var(--text)';
       const WDAYS=['일','월','화','수','목','금','토'];
+      const dayIdx=date.getDay(); // 0=일,1=월...6=토
+      const isWeekendDay=dayIdx===0||dayIdx===6;
+      const dayColor=isWeekendDay||holiday?'#dc2626':'var(--muted)';
+      const dateColor=isToday?'var(--c-schedule)':isWeekendDay||holiday?'#dc2626':'var(--text)';
       html+=`<div style="padding:10px 8px;border-right:0.5px solid var(--border);min-height:140px;max-height:140px;overflow:hidden;background:${bgColor};box-sizing:border-box;">
-        <div style="font-size:10px;color:${dayColor};margin-bottom:2px;">${WDAYS[date.getDay()]}</div>
+        <div style="font-size:10px;color:${dayColor};margin-bottom:2px;">${WDAYS[dayIdx]}</div>
         <div style="font-size:14px;font-weight:500;color:${dateColor};margin-bottom:4px;">${date.getDate()}</div>
         ${holiday?`<div style="font-size:9px;color:#dc2626;margin-bottom:4px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${holiday}</div>`:''}
-        ${(!weekend&&!holiday)?ev.map(e=>{
-          const t=e.type||'외부';
+        ${(!isWeekendDay&&!holiday)?ev.map(e=>{
+          const t=e.type||'기타';
+          const nm=e.name||e.title||'?';
           const key='cp'+(calPillIdx++);
-          CAL_PILL_DATA[key]={title:`${e.title||e.name} · ${t==='외부'?'외부일정':t}`,body:`<div style="font-size:12px;color:var(--muted);">${e.detail||e.text||'-'}</div>`};
+          CAL_PILL_DATA[key]={title:`${nm} · ${t==='외부'?'외부일정':t}`,body:`<div style="font-size:12px;color:var(--muted);">${e.detail||'-'}</div>`};
           return `<div style="font-size:10px;padding:2px 6px;border-radius:4px;margin-bottom:3px;cursor:default;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:${TYPE_BG_MAP[t]||'#eee'};color:${TYPE_TEXT_MAP[t]||'#666'};"
-            onmouseenter="showCalTip(event,'${key}')" onmouseleave="hideCalTip()">${e.title||e.name}</div>`;
+            onmouseenter="showCalTip(event,'${key}')" onmouseleave="hideCalTip()">${nm}</div>`;
         }).join(''):''}
       </div>`;
     });
@@ -1576,28 +1596,22 @@ function showCalSummaryTip(e,key){
   const tip=document.getElementById('calTip');if(!tip)return;
   document.getElementById('calTipTitle').textContent=d.title;
   if(key==='근무'){
-    document.getElementById('calTipBody').innerHTML=d.names.length===0
-      ?'<div style="font-size:12px;color:var(--muted);">없음</div>'
-      :d.names.map(n=>`<div style="display:flex;align-items:center;gap:6px;font-size:12px;margin-bottom:3px;"><div style="width:20px;height:20px;border-radius:50%;background:${calMemberColor(n)}22;color:${calMemberColor(n)};display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:500;">${n[0]}</div>${n}</div>`).join('');
+    document.getElementById('calTipBody').innerHTML='<div style="font-size:12px;color:var(--muted);">Supabase 일정 데이터 기준</div>';
   } else {
-    // 이름 - 일정 형식
-    const events=window._calTodayEvents||[];
-    const typeEvents=events.filter(ev=>(ev.type||'외부')===key);
-    document.getElementById('calTipBody').innerHTML=typeEvents.length===0
+    const items=d.items||[];
+    document.getElementById('calTipBody').innerHTML=items.length===0
       ?'<div style="font-size:12px;color:var(--muted);">없음</div>'
-      :typeEvents.map(ev=>{
-        const n=ev.title||ev.name||'';
-        const detail=ev.detail||ev.text||'-';
-        return `<div style="display:flex;align-items:flex-start;gap:6px;font-size:12px;margin-bottom:5px;">
-          <div style="width:20px;height:20px;border-radius:50%;background:${calMemberColor(n)}22;color:${calMemberColor(n)};display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:500;flex-shrink:0;">${n[0]}</div>
-          <div><div style="font-weight:500;">${n}</div><div style="font-size:11px;color:var(--muted);margin-top:1px;">${detail}</div></div>
-        </div>`;
-      }).join('');
+      :items.map(item=>`<div style="display:flex;align-items:flex-start;gap:6px;font-size:12px;margin-bottom:5px;">
+          <div style="width:20px;height:20px;border-radius:50%;background:${calMemberColor(item.name)}22;color:${calMemberColor(item.name)};display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:500;flex-shrink:0;">${item.name[0]||'?'}</div>
+          <div><div style="font-weight:500;color:var(--text);">${item.name}</div>${item.detail?`<div style="font-size:11px;color:var(--muted);margin-top:1px;">${item.detail}</div>`:''}</div>
+        </div>`).join('');
   }
   tip.style.display='block';
   const x=Math.min(e.clientX+12,window.innerWidth-240);
   const y=Math.max(e.clientY-10,10);
   tip.style.left=x+'px';tip.style.top=y+'px';
+  window._calSummaryData=window._calSummaryData||{};
+  window._calSummaryData[key]=d;
 }
 
 // ── 날씨 ──
@@ -1625,6 +1639,7 @@ const META={
   all:{label:'ALL TOOLS',title:'모든 툴',color:'var(--accent)'},
   mugu:{label:'MUGU',title:'문구',color:'var(--c-mugu)'},
   music:{label:'MUSIC',title:'음반',color:'var(--c-music)'},
+  munge:{label:'MUNGE',title:'문구',color:'#0891b2'},
   etc:{label:'ETC',title:'기타',color:'var(--c-etc)'},
   settle:{label:'ETC · 정산',title:'정산',color:'var(--c-settle)'},
   jryo:{label:'ETC · 자료',title:'자료',color:'var(--c-data)'},
@@ -1635,6 +1650,7 @@ const META={
 function getFiltered(key){
   if(key==='all')return TOOLS;
   if(key==='etc')return TOOLS.filter(t=>t.cat==='etc');
+  if(key==='munge')return TOOLS.filter(t=>t.cat==='munge');
   if(['settle','jryo','analysis','schedule'].includes(key))return TOOLS.filter(t=>t.subcat===key);
   return TOOLS.filter(t=>t.cat===key);
 }
@@ -1755,8 +1771,8 @@ window.onload=()=>{
   const d=new Date();
   document.getElementById('topDate').textContent=
     d.getFullYear()+'.'+String(d.getMonth()+1).padStart(2,'0')+'.'+String(d.getDate()).padStart(2,'0');
-  const c={all:0,mugu:0,music:0,etc:0,settle:0,jryo:0,analysis:0,schedule:0};
-  TOOLS.forEach(t=>{c.all++;c[t.cat]++;if(t.subcat)c[t.subcat]++;});
+  const c={all:0,mugu:0,music:0,munge:0,etc:0,settle:0,jryo:0,analysis:0,schedule:0};
+  TOOLS.forEach(t=>{c.all++;c[t.cat]=(c[t.cat]||0)+1;if(t.subcat)c[t.subcat]=(c[t.subcat]||0)+1;});
   Object.keys(c).forEach(k=>{const el=document.getElementById('cnt-'+k);if(el)el.textContent=c[k];});
   loadInventory();loadCalendar();
   renderDashInv();
