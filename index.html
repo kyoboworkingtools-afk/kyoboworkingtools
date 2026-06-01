@@ -264,7 +264,12 @@ tfoot td{background:var(--surface2);font-weight:700;font-size:11px;}
 </head>
 <body>
 
-<!-- TOPBAR -->
+<!-- ✅ CAL TOOLTIP: tool-viewer 밖으로 이동 -->
+<div id="calTip" style="display:none;position:fixed;background:var(--surface);border:0.5px solid var(--border2);border-radius:10px;padding:10px 14px;font-size:12px;color:var(--text);box-shadow:0 4px 16px rgba(0,0,0,.12);z-index:9999;max-width:220px;pointer-events:none;">
+  <div id="calTipTitle" style="font-size:11px;color:var(--muted);margin-bottom:6px;"></div>
+  <div id="calTipBody"></div>
+</div>
+
 <!-- ── 인증 화면 ── -->
 <div class="auth-wrap" id="authWrap">
   <!-- 로그인 -->
@@ -421,12 +426,6 @@ tfoot td{background:var(--surface2);font-weight:700;font-size:11px;}
 
 <!-- ── TOOL VIEWER ── -->
 <div class="tool-viewer" id="toolViewer">
-
-<!-- ── CAL TOOLTIP ── -->
-<div id="calTip" style="display:none;position:fixed;background:var(--surface);border:0.5px solid var(--border2);border-radius:10px;padding:10px 14px;font-size:12px;color:var(--text);box-shadow:0 4px 16px rgba(0,0,0,.12);z-index:999;max-width:220px;pointer-events:none;">
-  <div id="calTipTitle" style="font-size:11px;color:var(--muted);margin-bottom:6px;"></div>
-  <div id="calTipBody"></div>
-</div>
   <div class="tool-viewer-bar">
     <button class="tv-back" onclick="closeViewer()">← 포털로 돌아가기</button>
     <div class="topbar-divider"></div>
@@ -437,10 +436,7 @@ tfoot td{background:var(--surface2);font-weight:700;font-size:11px;}
 </div>
 
 <script>
-// ── 툴 데이터 ──
-// file: 실제 HTML 파일명 (같은 폴더에 있어야 함). null이면 준비 중 표시
 const TOOLS=[
-  // 음반
   {id:'t1',cat:'music',subcat:null,icon:'🏷️',title:'가격 변경 자동화',
    desc:'소비자가·공급가 일괄 변경 및 채널별 마진 시뮬레이션. 복수 타이틀 동시 처리',
    updated:'2025.05',badge:'linked',color:'var(--c-music)',iconbg:'rgba(240,128,128,.12)',
@@ -449,7 +445,6 @@ const TOOLS=[
    desc:'거래처별 반품 수량·금액 자동 정산. 공급가 기준 환입 금액 및 반품율 산출',
    updated:'2025.05',badge:'linked',color:'var(--c-music)',iconbg:'rgba(240,128,128,.12)',
    file:'music-return-list.html'},
-  // 기타 - 자료
   {id:'t3',cat:'etc',subcat:'jryo',icon:'🔢',title:'바코드 13자리 만들기',
    desc:'바코드 일괄 변환. 자리수 부족 시 0 보정, 14자리 이상 검수, 엑셀 다운로드',
    updated:'2025.05',badge:'linked',color:'var(--c-etc)',iconbg:'rgba(167,139,250,.12)',
@@ -462,7 +457,6 @@ let currentNav='dash-inv';
 const SUPA_URL='https://ftfpicvwprpcuhstteas.supabase.co';
 const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ0ZnBpY3Z3cHJwY3Voc3R0ZWFzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwNDg2NTMsImV4cCI6MjA5NTYyNDY1M30.6G9NwSmzSjSX1ZIu_h0TeoNDiRuQ6kOtrQBCu0R1oMk';
 
-// ── Supabase 클라이언트 ──
 const _supa = supabase.createClient(SUPA_URL, SUPA_KEY);
 
 let _currentUser = null;
@@ -477,7 +471,6 @@ const MENU_LIST = [
   {key:'기타_회의록', label:'기타 - 회의록'},
 ];
 
-// ── 인증 초기화 ──
 async function initAuth(){
   const {data:{session}} = await _supa.auth.getSession();
   if(session){
@@ -509,21 +502,16 @@ function applyPermissions(){
   const perms = _currentProfile?.permissions || {};
   const role = _currentProfile?.role;
   const isAdmin = role==='admin'||role==='superadmin';
-  // 어드민 메뉴 표시
   const adminNav = document.getElementById('nav-admin');
   if(adminNav) adminNav.style.display = isAdmin ? '' : 'none';
-  // 메뉴별 권한 적용 (어드민은 전체 허용)
   if(!isAdmin){
-    // 재고현황
     const invNav=document.querySelector('[onclick*="dash-inv"]');
     if(invNav) invNav.style.display=perms['재고현황']!==false?'':'none';
-    // 일정현황
     const calNav=document.querySelector('[onclick*="dash-cal"]');
     if(calNav) calNav.style.display=perms['일정현황']!==false?'':'none';
   }
 }
 
-// ── 화면 전환 ──
 function showAuthWrap(){ document.getElementById('authWrap').style.display='flex'; }
 function hideAuthWrap(){ document.getElementById('authWrap').style.display='none'; }
 function showAuth(page){
@@ -534,7 +522,6 @@ function showAuth(page){
 }
 function showPending(){ showAuthWrap(); showAuth('pending'); }
 
-// ── 로그인 ──
 async function doLogin(){
   const eid = document.getElementById('loginId').value.trim();
   const pw  = document.getElementById('loginPw').value;
@@ -542,7 +529,6 @@ async function doLogin(){
   const btn = document.getElementById('loginBtn');
   if(!eid||!pw){ errEl.textContent='사번과 비밀번호를 입력해주세요.'; return; }
   errEl.textContent=''; btn.disabled=true; btn.textContent='로그인 중...';
-  // 사번으로 이메일 조회
   const {data:profile} = await _supa.from('users').select('email').eq('employee_id',eid).single();
   if(!profile){ errEl.textContent='등록되지 않은 사번입니다.'; btn.disabled=false; btn.textContent='로그인'; return; }
   const {data,error} = await _supa.auth.signInWithPassword({email:profile.email, password:pw});
@@ -552,7 +538,6 @@ async function doLogin(){
   btn.disabled=false; btn.textContent='로그인';
 }
 
-// ── 회원가입 ──
 async function doSignup(){
   const name  = document.getElementById('signName').value.trim();
   const eid   = document.getElementById('signId').value.trim();
@@ -567,12 +552,10 @@ async function doSignup(){
   if(pw!==pw2){ errEl.textContent='비밀번호가 일치하지 않습니다.'; return; }
   errEl.textContent=''; btn.disabled=true; btn.textContent='가입 중...';
   const email = emailId+'@kyobobook.com';
-  // 사번 중복 확인
   const {data:dup} = await _supa.from('users').select('id').eq('employee_id',eid).single();
   if(dup){ errEl.textContent='이미 사용 중인 사번입니다.'; btn.disabled=false; btn.textContent='회원가입'; return; }
   const {data,error} = await _supa.auth.signUp({email, password:pw});
   if(error){ errEl.textContent=error.message; btn.disabled=false; btn.textContent='회원가입'; return; }
-  // users 테이블에 저장
   await _supa.from('users').insert({
     id: data.user.id, name, employee_id:eid, email,
     role:'pending',
@@ -583,7 +566,6 @@ async function doSignup(){
   btn.disabled=false; btn.textContent='회원가입';
 }
 
-// ── 비밀번호 재설정 ──
 async function doReset(){
   const eid = document.getElementById('resetId').value.trim();
   const errEl = document.getElementById('resetErr');
@@ -598,7 +580,6 @@ async function doReset(){
   btn.disabled=false; btn.textContent='재설정 링크 발송';
 }
 
-// ── 로그아웃 ──
 async function doLogout(){
   await _supa.auth.signOut();
   _currentUser=null; _currentProfile=null;
@@ -608,7 +589,6 @@ async function doLogout(){
   showAuthWrap();
 }
 
-// ── 어드민 페이지 ──
 async function renderAdminPage(){
   const el=document.getElementById('mainArea');
   el.innerHTML=`<div style="animation:fadeUp .3s ease;padding:24px;">
@@ -691,7 +671,6 @@ async function removeAdmin(uid){
   loadAdminTab('all');
 }
 
-// 앱 시작
 initAuth();
 
 let dashInvData={branch:[],genre:[],supplier:[]};
@@ -699,8 +678,8 @@ let dashCalData=null;
 let dashInvLoading=false,dashCalLoading=false;
 let invTab='branch';
 let invChannels=['온라인','오프라인','기타'];
-let invTypes=[];  // 빈 배열 = 전체 선택
-let invBranches=[];  // 빈 배열 = 전체 선택
+let invTypes=[];
+let invBranches=[];
 let calView='week';
 const todayD=new Date();
 
@@ -715,14 +694,11 @@ async function supaFetch(table,params=''){
   }catch{return [];}
 }
 
-// ── TOOL VIEWER ──
 function openTool(id){
   const t=TOOLS.find(x=>x.id===id);
   if(!t) return;
   recentIds=[id,...recentIds.filter(x=>x!==id)].slice(0,4);
-
   if(t.file){
-    // 실제 파일 연결
     document.getElementById('tvTitle').textContent=t.title;
     const badgeEl=document.getElementById('tvBadge');
     badgeEl.textContent='● 연결됨';
@@ -732,7 +708,6 @@ function openTool(id){
     document.getElementById('toolViewer').classList.add('open');
     document.body.style.overflow='hidden';
   } else {
-    // 준비 중 안내
     showComingSoon(t);
   }
 }
@@ -756,10 +731,8 @@ function showComingSoon(t){
   document.body.appendChild(overlay);
 }
 
-// ESC 키로 뷰어 닫기
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeViewer();});
 
-// ── 사이드바 ──
 function toggleSidebar(){
   const sb=document.getElementById('sidebar'),ov=document.getElementById('sidebarOverlay');
   sb.classList.toggle('open');ov.classList.toggle('show');
@@ -768,8 +741,6 @@ function closeSidebar(){
   document.getElementById('sidebar').classList.remove('open');
   document.getElementById('sidebarOverlay').classList.remove('show');
 }
-
-// ── Supabase fetch ──
 
 async function loadInventory(){
   dashInvLoading=true;if(currentNav==='dash-inv')renderDashInv();
@@ -787,9 +758,9 @@ async function loadCalendar(){
   const events=await supaFetch('schedules','select=*');
   dashCalData={events:events.map(e=>({
     id:e.id,
-    title:e.name||e.detail||'',   // 이름
+    title:e.name||e.detail||'',
     name:e.name||'',
-    detail:e.detail||e.name||'',  // 사유
+    detail:e.detail||e.name||'',
     date:e.date,
     startTime:null,endTime:null,allDay:true,
     calendar:e.sheet_month||'팀',
@@ -798,7 +769,6 @@ async function loadCalendar(){
   dashCalLoading=false;if(currentNav==='dash-cal')renderDashCal();
 }
 
-// 날짜 목록에서 최신/전주/전월마감 찾기
 function getLatestDate(data){
   const dates=[...new Set(data.map(d=>d.date))].sort().reverse();
   return dates[0]||null;
@@ -851,8 +821,6 @@ function getMonthCells(){
   return cells;
 }
 
-// ── 대시보드 재고 ──
-// ── 차트 관리 ──
 let activeCharts=[];
 function destroyCharts(){activeCharts.forEach(c=>c.destroy());activeCharts=[];}
 function mkChart(id,config){
@@ -889,7 +857,6 @@ function renderDashInv(){
   html+=`</div>`;
   el.innerHTML=html;
 
-  // 차트 생성 (DOM 렌더링 후)
   setTimeout(()=>{
     if(invTab==='branch') createBranchCharts();
     else if(invTab==='genre') createGenreCharts();
@@ -914,7 +881,7 @@ function renderBranchTab(){
   const allChannels=[...new Set(data.map(d=>d.type_a).filter(Boolean))].sort();
   const allTypes=[...new Set(data.map(d=>d.type_b).filter(Boolean))].sort();
   const allBranches=[...new Set(data.map(d=>d.branch).filter(Boolean))].sort();
-  if(invTypes.length===0) invTypes=[...allTypes]; // 빈 배열이면 전체로 초기화
+  if(invTypes.length===0) invTypes=[...allTypes];
   if(invBranches.length===0) invBranches=[];
 
   const latestFiltered=getBranchFiltered(data,latest);
@@ -928,11 +895,7 @@ function renderBranchTab(){
   const diff=totalAmt-closeTotal;
   const pct=closeTotal>0?((diff/closeTotal)*100).toFixed(1):0;
 
-  // 날짜별 주간 데이터
-  const allDates=[...new Set(data.map(d=>d.date))].sort();
-
   let html=`
-  <!-- 체크박스 드롭다운 필터 -->
   <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px;position:relative;">
     <div style="position:relative;">
       <button onclick="toggleBranchDrop('dropCh')" style="padding:6px 14px;border-radius:20px;border:1px solid var(--c-dash);background:var(--c-dash);color:#fff;font-size:11px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;display:flex;align-items:center;gap:6px;">
@@ -981,21 +944,16 @@ function renderBranchTab(){
       </div>
     </div>
   </div>
-  <!-- 선택된 지점 태그 -->
   <div id="branchTags" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:${invBranches.length>0?'12px':'0'}">
     ${invBranches.map(b=>`<span style="display:flex;align-items:center;gap:4px;padding:3px 10px;background:rgba(8,145,178,.1);border:1px solid #0891b2;border-radius:20px;font-size:11px;color:#0891b2;">
       ${b}<span onclick="removeBranch('${b}')" style="cursor:pointer;font-weight:700;margin-left:2px;">×</span>
     </span>`).join('')}
   </div>
-
-  <!-- 요약 카드 -->
   <div class="summary-row" id="branchCards">
     <div class="sum-card" style="border-top:2px solid var(--accent)"><div class="sum-num" style="color:var(--accent)">${fmtMil(totalAmt)}백만원</div><div class="sum-label">전체 재고금액</div></div>
     <div class="sum-card" style="border-top:2px solid var(--c-analysis)"><div class="sum-num" style="color:var(--c-analysis)">${fmt(totalQty)}개</div><div class="sum-label">전체 수량</div></div>
     <div class="sum-card" style="border-top:2px solid ${diff>=0?'#16a34a':'#dc2626'}"><div class="sum-num" style="color:${diff>=0?'#16a34a':'#dc2626'}">${diff>=0?'▲':'▼'}${fmtMil(Math.abs(diff))}백만</div><div class="sum-label">전월마감 대비 (${diff>=0?'+':''}${pct}%)</div></div>
   </div>
-
-  <!-- 차트 2×2 -->
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
     <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px;">
       <div style="font-size:11px;font-weight:600;color:var(--muted);margin-bottom:6px;">채널별 재고금액 비율</div>
@@ -1014,8 +972,6 @@ function renderBranchTab(){
       <canvas id="chartWater" height="160"></canvas>
     </div>
   </div>
-
-  <!-- 테이블 -->
   <div class="table-wrap" style="max-height:280px;overflow-y:auto;"><table>
     <thead><tr>
       <th>영업점</th><th>채널</th><th>판매유형</th>
@@ -1077,7 +1033,6 @@ function updateBranchFilter(){
   const tyAll=document.getElementById('ty_all');
   if(chAll) chAll.checked=invChannels.length===allChannels.length;
   if(tyAll) tyAll.checked=invTypes.length===allTypes.length;
-  // 지점 태그 업데이트
   const tags=document.getElementById('branchTags');
   if(tags){
     tags.style.marginBottom=invBranches.length>0?'12px':'0';
@@ -1096,25 +1051,17 @@ function updateBranchCharts(){
   const allDates=[...new Set(data.map(d=>d.date))].sort();
   const filtered=getBranchFiltered(data,latest);
   const closeFiltered=data.filter(d=>d.date===closing);
-
-  // 도넛
   const chMap={};
   filtered.forEach(d=>{const k=d.type_a||'기타';chMap[k]=(chMap[k]||0)+(d.amount||0);});
   if(window._bc1){window._bc1.data.labels=Object.keys(chMap);window._bc1.data.datasets[0].data=Object.values(chMap);window._bc1.update();}
-
-  // Top10
   const top10=[...filtered].sort((a,b)=>(b.amount||0)-(a.amount||0)).slice(0,10);
   if(window._bc2){window._bc2.data.labels=top10.map(d=>d.branch);window._bc2.data.datasets[0].data=top10.map(d=>d.amount||0);window._bc2.update();}
-
-  // 라인 추이
   const lineTotals=allDates.map(date=>{
     const rows=data.filter(d=>d.date===date&&invChannels.includes(d.type_a||'기타')&&invTypes.includes(d.type_b||'기타'));
     return rows.reduce((s,d)=>s+(d.amount||0),0);
   });
   const closingVal=lineTotals[0]||0;
   if(window._bc3){window._bc3.data.labels=allDates;window._bc3.data.datasets[0].data=lineTotals;window._bc3.data.datasets[1].data=new Array(allDates.length).fill(closingVal);window._bc3.update();}
-
-  // 워터폴
   const diffs=filtered.map(d=>{
     const c=closeFiltered.find(c=>c.branch===d.branch);
     return ((d.amount||0)-(c?.amount||0))/1000000;
@@ -1126,8 +1073,6 @@ function updateBranchCharts(){
     window._bc4.data.datasets[0].borderColor=diffs.map(v=>v>=0?'#16a34a':'#dc2626');
     window._bc4.update();
   }
-
-  // 요약 카드
   const totalAmt=filtered.reduce((s,d)=>s+(d.amount||0),0);
   const totalQty=filtered.reduce((s,d)=>s+(d.quantity||0),0);
   const closeTotal=filtered.reduce((s,d)=>{const c=closeFiltered.find(c=>c.branch===d.branch);return s+(c?.amount||0);},0);
@@ -1184,8 +1129,6 @@ function createBranchCharts(){
   const allDates=[...new Set(data.map(d=>d.date))].sort();
   const filtered=getBranchFiltered(data,latest);
   const closeFiltered=data.filter(d=>d.date===closing);
-
-  // 도넛
   const chMap={};
   filtered.forEach(d=>{const k=d.type_a||'기타';chMap[k]=(chMap[k]||0)+(d.amount||0);});
   window._bc1=new Chart(document.getElementById('chartTypeA'),{type:'doughnut',data:{
@@ -1193,16 +1136,12 @@ function createBranchCharts(){
     datasets:[{data:Object.values(chMap),backgroundColor:CHART_COLORS,borderWidth:2,borderColor:'#fff'}]
   },options:{responsive:true,plugins:{legend:{position:'bottom',labels:{font:{size:10},padding:8}},tooltip:{callbacks:{label:ctx=>`${ctx.label}: ${fmtMil(ctx.raw)}백만원`}}}}});
   activeCharts.push(window._bc1);
-
-  // Top10
   const top10=[...filtered].sort((a,b)=>(b.amount||0)-(a.amount||0)).slice(0,10);
   window._bc2=new Chart(document.getElementById('chartBranch'),{type:'bar',data:{
     labels:top10.map(d=>d.branch),
     datasets:[{data:top10.map(d=>d.amount||0),backgroundColor:'rgba(26,111,212,.15)',borderColor:'#1a6fd4',borderWidth:1.5,borderRadius:4}]
   },options:{indexAxis:'y',responsive:true,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${fmtMil(ctx.raw)}백만원`}}},scales:{x:{ticks:{callback:v=>fmtMil(v)+'백만',font:{size:9}},grid:{color:'rgba(0,0,0,.05)'}},y:{ticks:{font:{size:10}}}}}});
   activeCharts.push(window._bc2);
-
-  // 라인 추이
   const lineTotals=allDates.map(date=>{
     const rows=data.filter(d=>d.date===date&&invChannels.includes(d.type_a||'기타')&&invTypes.includes(d.type_b||'기타'));
     return rows.reduce((s,d)=>s+(d.amount||0),0);
@@ -1216,18 +1155,13 @@ function createBranchCharts(){
     ]
   },options:{responsive:true,plugins:{legend:{position:'bottom',labels:{font:{size:10}}},tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${fmtMil(ctx.raw)}백만원`}}},scales:{x:{ticks:{font:{size:9}},grid:{display:false}},y:{ticks:{callback:v=>fmtMil(v)+'백만',font:{size:9}},grid:{color:'rgba(0,0,0,.05)'}}}}});
   activeCharts.push(window._bc3);
-
-  // 워터폴
   const diffs=filtered.map(d=>{const c=closeFiltered.find(c=>c.branch===d.branch);return parseFloat((((d.amount||0)-(c?.amount||0))/1000000).toFixed(2));});
   window._bc4=new Chart(document.getElementById('chartWater'),{type:'bar',data:{
     labels:filtered.map(d=>d.branch),
     datasets:[{data:diffs,backgroundColor:diffs.map(v=>v>=0?'rgba(22,163,74,.2)':'rgba(220,38,38,.2)'),borderColor:diffs.map(v=>v>=0?'#16a34a':'#dc2626'),borderWidth:1.5,borderRadius:3}]
   },options:{indexAxis:'y',responsive:true,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.raw>=0?'▲':'▼'}${Math.abs(ctx.raw)}백만원`}}},scales:{x:{ticks:{callback:v=>(v>=0?'+':'')+v+'백만',font:{size:9}},grid:{color:ctx=>ctx.tick.value===0?'rgba(0,0,0,.3)':'rgba(0,0,0,.05)'}},y:{ticks:{font:{size:10}}}}}});
   activeCharts.push(window._bc4);
-
   updateBranchTable();
-
-  // 드롭다운 외부 클릭 시 닫기
   document.addEventListener('click',e=>{
     if(!e.target.closest('#dropCh')&&!e.target.closest('button[onclick*="dropCh"]'))
       {const el=document.getElementById('dropCh');if(el)el.style.display='none';}
@@ -1241,7 +1175,6 @@ function createBranchCharts(){
 function renderGenreTab(){
   const data=dashInvData.genre||[];
   if(!data.length) return `<div class="empty-state">📭<br><br>데이터가 없습니다</div>`;
-
   const latest=getLatestDate(data);
   const prevWeek=getPrevWeekDate(data,latest);
   const closing=getLatestClosingDate(data,latest);
@@ -1251,7 +1184,6 @@ function renderGenreTab(){
   const genres=[...new Set(latestData.map(d=>d.genre))].sort();
   const genreAmts=genres.map(g=>latestData.filter(d=>d.genre===g).reduce((s,d)=>s+(d.amount||0),0));
   const genreCloseAmts=genres.map(g=>closeData.filter(d=>d.genre===g).reduce((s,d)=>s+(d.amount||0),0));
-
   let html=`<div class="meta-row">
     <span class="meta-tag">📅 기준일: ${latest||'-'}</span>
     ${closing?`<span class="meta-tag">📌 전월마감: ${closing}</span>`:''}
@@ -1271,7 +1203,6 @@ function renderGenreTab(){
       <th>장르</th><th style="text-align:right">수량 (개)</th><th style="text-align:right">금액 (백만원)</th>
       <th style="text-align:right">전월마감比</th><th style="text-align:right">전주比</th>
     </tr></thead><tbody>`;
-
   genres.forEach((g,i)=>{
     const rows=latestData.filter(d=>d.genre===g);
     const qty=rows.reduce((s,d)=>s+(d.quantity||0),0);
@@ -1299,12 +1230,10 @@ function createGenreCharts(){
   const genres=[...new Set(latestData.map(d=>d.genre))].sort();
   const amts=genres.map(g=>latestData.filter(d=>d.genre===g).reduce((s,d)=>s+(d.amount||0),0));
   const closeAmts=genres.map(g=>closeData.filter(d=>d.genre===g).reduce((s,d)=>s+(d.amount||0),0));
-
   mkChart('chartGenrePie',{type:'doughnut',data:{
     labels:genres,
     datasets:[{data:amts,backgroundColor:CHART_COLORS,borderWidth:2,borderColor:'#fff'}]
   },options:{responsive:true,plugins:{legend:{position:'bottom',labels:{font:{size:11},padding:10}},tooltip:{callbacks:{label:ctx=>`${ctx.label}: ${fmt(ctx.raw)}원`}}}}});
-
   mkChart('chartGenreBar',{type:'bar',data:{
     labels:genres,
     datasets:[
@@ -1317,14 +1246,12 @@ function createGenreCharts(){
 function renderSupplierTab(){
   const data=dashInvData.supplier||[];
   if(!data.length) return `<div class="empty-state">📭<br><br>데이터가 없습니다</div>`;
-
   const latest=getLatestDate(data);
   const prevWeek=getPrevWeekDate(data,latest);
   const closing=getLatestClosingDate(data,latest);
   const latestData=data.filter(d=>d.date===latest);
   const prevData=data.filter(d=>d.date===prevWeek);
   const closeData=data.filter(d=>d.date===closing);
-
   let html=`<div class="meta-row">
     <span class="meta-tag">📅 기준일: ${latest||'-'}</span>
     ${closing?`<span class="meta-tag">📌 전월마감: ${closing}</span>`:''}
@@ -1339,7 +1266,6 @@ function renderSupplierTab(){
       <th style="text-align:right">수량 (개)</th><th style="text-align:right">금액 (백만원)</th>
       <th style="text-align:right">전월마감比</th><th style="text-align:right">전주比</th>
     </tr></thead><tbody>`;
-
   latestData.sort((a,b)=>(b.amount||0)-(a.amount||0)).forEach((d,i)=>{
     const prev=prevData.find(p=>p.supplier_code===d.supplier_code&&p.supplier_name===d.supplier_name);
     const close=closeData.find(c=>c.supplier_code===d.supplier_code&&c.supplier_name===d.supplier_name);
@@ -1366,7 +1292,6 @@ function createSupplierCharts(){
   },options:{indexAxis:'y',responsive:true,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${fmt(ctx.raw)}원`}}},scales:{x:{ticks:{callback:v=>fmt(v),font:{size:9}},grid:{color:'rgba(0,0,0,.05)'}},y:{ticks:{font:{size:10}}}}}});
 }
 
-// ── 공휴일 ──
 const HOLIDAYS_KR={
   '2026-01-01':'신정','2026-01-28':'설날연휴','2026-01-29':'설날','2026-01-30':'설날연휴',
   '2026-03-01':'삼일절','2026-05-05':'어린이날','2026-05-24':'부처님오신날',
@@ -1379,7 +1304,6 @@ function getHoliday(ds){return HOLIDAYS_KR[ds]||null;}
 
 let calPillIdx=0;
 const CAL_PILL_DATA={};
-
 const TYPE_COLOR_MAP={휴가:'#EF9F27',외부:'#378ADD',교육:'#639922',출장:'#7F77DD'};
 const TYPE_BG_MAP={휴가:'#FAEEDA',외부:'#E6F1FB',교육:'#EAF3DE',출장:'#EEEDFE'};
 const TYPE_TEXT_MAP={휴가:'#633806',외부:'#0C447C',교육:'#27500A',출장:'#3C3489'};
@@ -1401,16 +1325,13 @@ function showCalTip(e,key){
   tip.style.left=x+'px';tip.style.top=y+'px';
 }
 function hideCalTip(){const t=document.getElementById('calTip');if(t)t.style.display='none';}
-
 function calEventsForDate(ds,events){return (events||[]).filter(e=>e.date===ds);}
 
 function extractPlace(text){
   if(!text)return null;
-  // 괄호 안 장소, 언더바 뒤 장소, 앞 2~5글자 장소명 추출
   const m=text.match(/[(\[]([^)\]]+)[)\]]/)
     ||text.match(/[_\s]([가-힣a-zA-Z]{2,8})\s*(점|역|동|로|거리|센터|타워|빌딩|파크|마트|몰)?/);
   if(m)return (m[1]+(m[2]||''));
-  // 첫 단어 추출
   const first=text.replace(/오전|오후|종일|총일|\d+:\d+|\(.*?\)/g,'').trim().split(/[\s,]/)[0];
   return first&&first.length>=2?first:null;
 }
@@ -1423,10 +1344,12 @@ function naverMapUrl(text){
 
 function renderDashCal(){
   if(currentNav!=='dash-cal')return;
+  // ✅ 렌더링마다 CAL_PILL_DATA 초기화
   calPillIdx=0;
+  Object.keys(CAL_PILL_DATA).forEach(k=>delete CAL_PILL_DATA[k]);
+
   const events=dashCalData?.events||[];
   const el=document.getElementById('mainArea');
-
   const todayStr=`${todayD.getFullYear()}-${String(todayD.getMonth()+1).padStart(2,'0')}-${String(todayD.getDate()).padStart(2,'0')}`;
   const todayEvents=calEventsForDate(todayStr,events);
   const typeCount={휴가:[],외부:[],교육:[],출장:[],기타:[]};
@@ -1436,8 +1359,6 @@ function renderDashCal(){
     else typeCount['기타'].push({name:e.name||e.title||'', detail:e.detail||''});
   });
   const atWork=15-todayEvents.length;
-  const atWorkNames=[];
-  // 정상근무 = 전체팀원 - 오늘일정있는팀원 (Supabase 팀원 목록 기반)
   window._calTodayEvents=todayEvents;
 
   const SUMMARY_DATA={};
@@ -1451,8 +1372,6 @@ function renderDashCal(){
     <div><div class="page-category-tag">DASHBOARD</div><div class="page-title">일정 현황</div></div>
     <button class="refresh-btn" onclick="loadCalendar()">↻ 새로고침</button>
   </div>
-
-  <!-- 날짜 + 날씨 상단 바 -->
   <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px;flex-wrap:wrap;">
     <div style="display:flex;align-items:center;gap:8px;padding:10px 16px;background:var(--surface);border:0.5px solid var(--border);border-radius:10px;">
       <span style="font-size:15px;font-weight:500;color:var(--text);">${todayD.getFullYear()}년 ${todayD.getMonth()+1}월 ${todayD.getDate()}일</span>
@@ -1465,7 +1384,6 @@ function renderDashCal(){
 
   if(dashCalLoading){html+=`<div class="load-box"><div class="spinner"></div><div>일정 데이터를 불러오는 중...</div></div></div>`;el.innerHTML=html;return;}
 
-  // 요약 카드
   html+=`<div class="section-label" style="font-size:11px;color:var(--muted);margin-bottom:8px;">오늘 일정 인원</div>
   <div class="summary-row" style="margin-bottom:16px;">
     <div class="sum-card" style="border-top:2px solid var(--accent);cursor:pointer;" onmouseenter="showCalSummaryTip(event,'근무')" onmouseleave="hideCalTip()">
@@ -1480,7 +1398,6 @@ function renderDashCal(){
       <div class="sum-num" style="color:#7F77DD">${typeCount['출장'].length}</div><div class="sum-label">출장</div></div>
   </div>`;
 
-  // 오늘 부재 팀원
   html+=`<div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:10px;">오늘 자리 비우는 팀원</div>
   <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:18px;">`;
   if(!todayEvents.length){
@@ -1505,7 +1422,6 @@ function renderDashCal(){
   }
   html+=`</div>`;
 
-  // 캘린더 영역
   html+=`<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:18px;">
   <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--border);">
     <div style="font-size:13px;font-weight:600;color:var(--text);" id="calViewTitle">이번 주 일정</div>
@@ -1528,7 +1444,7 @@ function renderDashCal(){
       const ds=`${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
       const isToday=ds===todayStr;
       const holiday=getHoliday(ds);
-      const dayIdx=date.getDay(); // 0=일, 6=토
+      const dayIdx=date.getDay();
       const isWeekendDay=dayIdx===0||dayIdx===6;
       const ev=calEventsForDate(ds,events).sort((a,b)=>['휴가','외부','교육','출장'].indexOf(a.type)-['휴가','외부','교육','출장'].indexOf(b.type));
       const bgColor=isToday?'rgba(244,114,182,.05)':holiday?'rgba(239,159,39,.05)':isWeekendDay?'rgba(0,0,0,.02)':'transparent';
@@ -1553,9 +1469,9 @@ function renderDashCal(){
     html+=`</div>`;
   } else {
     const y=todayD.getFullYear(),m=todayD.getMonth();
-    const fd=new Date(y,m,1).getDay(); // 0=일
+    const fd=new Date(y,m,1).getDay();
     const dim=new Date(y,m+1,0).getDate();
-    const offset=fd; // 일요일 시작이므로 그대로
+    const offset=fd;
     html+=`<div style="padding:12px;">
     <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:3px;">
       ${['일','월','화','수','목','금','토'].map((d,i)=>`<div style="text-align:center;font-size:10px;color:${i===0||i===6?'#dc2626':'var(--muted)'};padding:4px 0;">${d}</div>`).join('')}
@@ -1608,11 +1524,8 @@ function showCalSummaryTip(e,key){
   const x=Math.min(e.clientX+12,window.innerWidth-240);
   const y=Math.max(e.clientY-10,10);
   tip.style.left=x+'px';tip.style.top=y+'px';
-  window._calSummaryData=window._calSummaryData||{};
-  window._calSummaryData[key]=d;
 }
 
-// ── 날씨 ──
 async function fetchWeather(){
   try{
     const res=await fetch('https://api.open-meteo.com/v1/forecast?latitude=37.5665&longitude=126.9780&current=temperature_2m,weathercode&timezone=Asia/Seoul');
@@ -1632,7 +1545,6 @@ async function fetchWeather(){
   }
 }
 
-// ── 툴 페이지 ──
 const META={
   all:{label:'ALL TOOLS',title:'모든 툴',color:'var(--accent)'},
   mugu:{label:'MUGU',title:'문구',color:'var(--c-mugu)'},
@@ -1658,20 +1570,16 @@ function renderToolPage(key){
   const tools=getFiltered(key);
   const recentTools=recentIds.map(id=>TOOLS.find(t=>t.id===id)).filter(Boolean);
   let html='';
-
   if(recentTools.length){
     html+=`<div class="recent-bar"><span class="recent-label">RECENT</span><div class="recent-chips">`;
     recentTools.forEach(t=>{html+=`<div class="recent-chip" onclick="openTool('${t.id}')"><span class="rc-dot" style="background:${t.color}"></span>${t.title}</div>`;});
     html+=`</div></div>`;
   }
-
   html+=`<div class="page-header" style="--page-color:${m.color}">
     <div><div class="page-category-tag">${m.label}</div><div class="page-title">${m.title}</div></div>
     <span class="page-tool-count">${tools.length} tools</span>
   </div>`;
-
   if(!tools.length){html+=`<div class="empty-state">📭<br><br>등록된 툴이 없습니다</div>`;document.getElementById('mainArea').innerHTML=html;return;}
-
   if(key==='all'){
     html+=renderGrouped([
       {label:'문구',color:'var(--c-mugu)',items:TOOLS.filter(t=>t.cat==='mugu')},
