@@ -160,6 +160,47 @@ tfoot td{background:var(--surface2);font-weight:700;font-size:11px;}
 .spinner{width:26px;height:26px;border:2px solid var(--border2);border-top:2px solid var(--accent);border-radius:50%;margin:0 auto 12px;animation:spin .8s linear infinite;}
 @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 @keyframes spin{to{transform:rotate(360deg)}}
+  .inv-section{background:var(--surface);border:1px solid var(--border);border-radius:10px;margin-bottom:14px;overflow:hidden;}
+.inv-sh{padding:10px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+.inv-st{font-size:13px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:6px;}
+.inv-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.inv-fw{display:flex;gap:6px;flex-wrap:wrap;align-items:center;}
+.inv-fb{padding:4px 10px;border-radius:20px;border:0.5px solid var(--border2);background:transparent;font-size:11px;color:var(--muted);cursor:pointer;font-family:'Noto Sans KR',sans-serif;}
+.inv-fb:hover{background:var(--surface2);}
+.inv-2x2{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:12px;}
+.inv-1x2{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:12px;}
+.inv-cc{background:var(--surface2);border:0.5px solid var(--border);border-radius:8px;padding:10px;}
+.inv-cl{font-size:11px;color:var(--muted);margin-bottom:6px;}
+.inv-leg{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;}
+.inv-leg span{display:flex;align-items:center;gap:3px;font-size:10px;color:var(--muted);}
+.inv-lsq{width:8px;height:8px;border-radius:2px;flex-shrink:0;}
+.inv-sr{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:10px 12px;border-bottom:0.5px solid var(--border);}
+.inv-sc{background:var(--surface2);border-radius:8px;padding:8px 12px;}
+.inv-sl{font-size:10px;color:var(--dim);margin-bottom:2px;}
+.inv-sv{font-size:15px;font-weight:500;}
+.inv-to{max-height:240px;overflow-y:auto;position:relative;}
+.inv-to::-webkit-scrollbar{width:4px;}
+.inv-to::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+.inv-to table{width:100%;border-collapse:collapse;}
+.inv-hd{position:sticky;top:0;z-index:2;}
+.inv-hd th{padding:6px 10px;text-align:left;font-size:10px;color:var(--dim);font-family:'DM Mono',monospace;border-bottom:0.5px solid var(--border);background:var(--surface2);white-space:nowrap;font-weight:400;cursor:pointer;user-select:none;}
+.inv-hd th:hover{color:var(--text);}
+.inv-hd th .si{margin-left:3px;font-size:9px;opacity:0.5;}
+.inv-hd th.asc .si::after{content:'▲';}
+.inv-hd th.desc .si::after{content:'▼';}
+.inv-hd th:not(.asc):not(.desc) .si::after{content:'↕';}
+.inv-tr td{background:var(--surface2);font-weight:500;font-size:11px;padding:6px 10px;border-bottom:0.5px solid var(--border2);position:sticky;top:29px;z-index:1;color:var(--text);}
+.inv-to td{padding:6px 10px;font-size:12px;border-bottom:0.5px solid var(--border);color:var(--text);}
+.inv-to tr:last-child td{border-bottom:none;}
+.inv-dr:hover td{background:var(--surface2);}
+.inv-bg{font-size:10px;padding:1px 6px;border-radius:3px;}
+.inv-bon{background:#E6F1FB;color:#0C447C;}
+.inv-bof{background:#EAF3DE;color:#27500A;}
+.inv-up{color:#16a34a;}
+.inv-dn{color:#dc2626;}
+.inv-bw{display:flex;align-items:center;gap:5px;}
+.inv-bb{flex:1;height:5px;background:var(--surface2);border-radius:3px;overflow:hidden;}
+.inv-bf{height:100%;border-radius:3px;}
 </style>
 </head>
 <body>
@@ -300,7 +341,7 @@ initAuth();
 
 let dashInvData={branch:[],genre:[],supplier:[]},dashCalData=null;
 let dashInvLoading=false,dashCalLoading=false,invTab='branch';
-let invChannels=['온라인','오프라인','기타'],invTypes=[],invBranches=[],calView='week';
+let invChannels=[],invTypes=[],invBranches=[],calView='week';
 const todayD=new Date();
 
 async function supaFetch(table,params=''){try{const {data:{session}}=await _supa.auth.getSession();const token=session?.access_token||SUPA_KEY;const res=await fetch(`${SUPA_URL}/rest/v1/${table}?${params}&order=date.desc`,{headers:{'apikey':SUPA_KEY,'Authorization':`Bearer ${token}`}});return res.ok?await res.json():[];}catch{return [];}}
@@ -328,143 +369,136 @@ function destroyCharts(){activeCharts.forEach(c=>c.destroy());activeCharts=[];}
 function mkChart(id,config){const el=document.getElementById(id);if(!el)return;activeCharts.push(new Chart(el,config));}
 const CHART_COLORS=['#1a6fd4','#16a34a','#dc2626','#ea580c','#7c3aed','#0891b2','#db2777','#ca8a04'];
 
+function getBF(data,dateStr){return data.filter(d=>d.date===dateStr&&(invChannels.length===0||invChannels.includes(d.type_a||'기타'))&&(invTypes.length===0||invTypes.includes(d.type_b||'기타'))&&(invBranches.length===0||invBranches.includes(d.branch)));}
+
 function renderDashInv(){
-  if(currentNav!=='dash-inv')return;destroyCharts();
+  if(currentNav!=='dash-inv')return;
+  destroyCharts();
   const el=document.getElementById('mainArea');
-  let html=`<div style="animation:fadeUp .3s ease"><div class="page-header" style="--page-color:var(--c-dash)"><div><div class="page-category-tag">DASHBOARD</div><div class="page-title">재고 현황</div></div><button class="refresh-btn" onclick="loadInventory()">↻ 새로고침</button></div>`;
-  if(dashInvLoading){html+=`<div class="load-box"><div class="spinner"></div><div>Supabase에서 재고 데이터를 불러오는 중...</div></div></div>`;el.innerHTML=html;return;}
-  html+=`<div style="display:flex;gap:6px;margin-bottom:18px;border-bottom:1px solid var(--border);padding-bottom:12px;">${[['branch','영업점별'],['genre','장르별'],['supplier','매입처별']].map(([k,l])=>`<button onclick="invTab='${k}';renderDashInv()" style="padding:7px 16px;border-radius:7px;font-size:12px;font-family:'Noto Sans KR',sans-serif;cursor:pointer;border:1px solid ${invTab===k?'var(--c-dash)':'var(--border2)'};background:${invTab===k?'rgba(3,105,161,.1)':'transparent'};color:${invTab===k?'var(--c-dash)':'var(--muted)'};font-weight:${invTab===k?700:400}">${l}</button>`).join('')}</div>`;
-  if(invTab==='branch')html+=renderBranchTab();else if(invTab==='genre')html+=renderGenreTab();else html+=renderSupplierTab();
-  html+=`</div>`;el.innerHTML=html;
-  setTimeout(()=>{if(invTab==='branch')createBranchCharts();else if(invTab==='genre')createGenreCharts();else createSupplierCharts();},50);
+  if(dashInvLoading){el.innerHTML=`<div style="animation:fadeUp .3s ease"><div class="page-header" style="--page-color:var(--c-dash)"><div><div class="page-category-tag">DASHBOARD</div><div class="page-title">재고 현황</div></div><button class="refresh-btn" onclick="loadInventory()">↻ 새로고침</button></div><div class="load-box"><div class="spinner"></div><div>데이터를 불러오는 중...</div></div></div>`;return;}
+  const BD=dashInvData.branch||[],GD=dashInvData.genre||[],SD=dashInvData.supplier||[];
+  const allCh=[...new Set(BD.map(d=>d.type_a).filter(Boolean))].sort();
+  const allTy=[...new Set(BD.map(d=>d.type_b).filter(Boolean))].sort();
+  const allBr=[...new Set(BD.map(d=>d.branch).filter(Boolean))].sort();
+  if(invChannels.length===0)invChannels=[...allCh];
+  if(invTypes.length===0)invTypes=[...allTy];
+  const bL=getLatestDate(BD),bP=getPrevWeekDate(BD,bL),bC=getLatestClosingDate(BD,bL);
+  const filt=getBF(BD,bL),cFilt=BD.filter(d=>d.date===bC),pFilt=BD.filter(d=>d.date===bP);
+  const tAmt=filt.reduce((s,d)=>s+(d.amount||0),0),tQty=filt.reduce((s,d)=>s+(d.quantity||0),0);
+  const cTot=filt.reduce((s,d)=>{const c=cFilt.find(c=>c.branch===d.branch);return s+(c?.amount||0);},0);
+  const diff=tAmt-cTot,pct=cTot>0?((diff/cTot)*100).toFixed(1):0;
+  const gL=getLatestDate(GD),gC=getLatestClosingDate(GD,gL);
+  const gLD=GD.filter(d=>d.date===gL),gPD=GD.filter(d=>d.date===getPrevWeekDate(GD,gL)),gCD=GD.filter(d=>d.date===gC);
+  const genres=[...new Set(gLD.map(d=>d.genre))].sort();
+  const gAmts=genres.map(g=>gLD.filter(d=>d.genre===g).reduce((s,d)=>s+(d.amount||0),0));
+  const gCAmts=genres.map(g=>gCD.filter(d=>d.genre===g).reduce((s,d)=>s+(d.amount||0),0));
+  const gTot=gAmts.reduce((a,b)=>a+b,0);
+  const sL=getLatestDate(SD),sC=getLatestClosingDate(SD,sL);
+  const sLD=SD.filter(d=>d.date===sL),sPD=SD.filter(d=>d.date===getPrevWeekDate(SD,sL)),sCD=SD.filter(d=>d.date===sC);
+  const sTop10=[...sLD].sort((a,b)=>(b.amount||0)-(a.amount||0)).slice(0,10);
+  const sDiffs=sTop10.map(d=>{const c=sCD.find(c=>c.supplier_code===d.supplier_code);return parseFloat((((d.amount||0)-(c?.amount||0))/1000000).toFixed(2));});
+  const sTot=sLD.reduce((s,d)=>s+(d.amount||0),0),sQTot=sLD.reduce((s,d)=>s+(d.quantity||0),0);
+  const sCTot=sLD.reduce((s,d)=>{const c=sCD.find(c=>c.supplier_code===d.supplier_code);return s+(c?.amount||0);},0);
+  const sPTot=sLD.reduce((s,d)=>{const c=sPD.find(p=>p.supplier_code===d.supplier_code);return s+(c?.amount||0);},0);
+  const allDates=[...new Set(BD.map(d=>d.date))].sort();
+  const chMap={};filt.forEach(d=>{const k=d.type_a||'기타';chMap[k]=(chMap[k]||0)+(d.amount||0);});
+  const top10=[...filt].sort((a,b)=>(b.amount||0)-(a.amount||0)).slice(0,10);
+  const lineTotals=allDates.map(date=>{const rows=BD.filter(d=>d.date===date&&invChannels.includes(d.type_a||'기타')&&invTypes.includes(d.type_b||'기타'));return Math.round(rows.reduce((s,d)=>s+(d.amount||0),0)/1000000);});
+  const diffs=filt.map(d=>{const c=cFilt.find(c=>c.branch===d.branch);return parseFloat((((d.amount||0)-(c?.amount||0))/1000000).toFixed(2));});
+  let html=`<div style="animation:fadeUp .3s ease"><div class="page-header" style="--page-color:var(--c-dash)"><div><div class="page-category-tag">DASHBOARD</div><div class="page-title">재고 현황</div></div><button class="refresh-btn" onclick="loadInventory()">↻ 새로고침</button></div>
+  <div class="inv-section"><div class="inv-sh"><div class="inv-st"><div class="inv-dot" style="background:#1a6fd4;"></div>영업점별 재고</div><div class="inv-fw"><div style="position:relative;"><button class="inv-fb" onclick="toggleIDrop('idc')">채널 <span id="ilC">${invChannels.length===allCh.length?'전체':invChannels.join('+')}</span> ▾</button><div id="idc" style="display:none;position:absolute;top:34px;right:0;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 14px;z-index:200;min-width:130px;box-shadow:0 4px 12px rgba(0,0,0,.1);"><label style="display:flex;align-items:center;gap:8px;font-size:12px;padding:4px 0;cursor:pointer;"><input type="checkbox" id="icA" ${invChannels.length===allCh.length?'checked':''} onchange="toggleIAll('c')"> 전체</label><hr style="border:none;border-top:0.5px solid var(--border);margin:6px 0;">${allCh.map(c=>`<label style="display:flex;align-items:center;gap:8px;font-size:12px;padding:4px 0;cursor:pointer;"><input type="checkbox" class="ic_c" value="${c}" ${invChannels.includes(c)?'checked':''} onchange="applyIF()"> ${c}</label>`).join('')}</div></div><div style="position:relative;"><button class="inv-fb" onclick="toggleIDrop('idt')">판매유형 <span id="ilT">${invTypes.length===allTy.length?'전체':invTypes.join('+')}</span> ▾</button><div id="idt" style="display:none;position:absolute;top:34px;right:0;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 14px;z-index:200;min-width:130px;box-shadow:0 4px 12px rgba(0,0,0,.1);"><label style="display:flex;align-items:center;gap:8px;font-size:12px;padding:4px 0;cursor:pointer;"><input type="checkbox" id="itA" ${invTypes.length===allTy.length?'checked':''} onchange="toggleIAll('t')"> 전체</label><hr style="border:none;border-top:0.5px solid var(--border);margin:6px 0;">${allTy.map(t=>`<label style="display:flex;align-items:center;gap:8px;font-size:12px;padding:4px 0;cursor:pointer;"><input type="checkbox" class="ic_t" value="${t}" ${invTypes.includes(t)?'checked':''} onchange="applyIF()"> ${t}</label>`).join('')}</div></div><div style="position:relative;"><button class="inv-fb" onclick="toggleIDrop('idb')">지점 선택${invBranches.length>0?` <span style="background:#0891b2;color:#fff;border-radius:10px;padding:1px 6px;font-size:10px;">${invBranches.length}</span>`:''} ▾</button><div id="idb" style="display:none;position:absolute;top:34px;right:0;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px;z-index:200;width:200px;box-shadow:0 4px 12px rgba(0,0,0,.12);"><input id="ibS" type="text" placeholder="지점명 검색..." oninput="filterIBr()" style="width:100%;padding:6px 10px;border:1px solid var(--border);border-radius:7px;font-size:12px;outline:none;box-sizing:border-box;margin-bottom:8px;font-family:'Noto Sans KR',sans-serif;background:var(--surface2);color:var(--text);"><div id="ibL" style="max-height:160px;overflow-y:auto;">${allBr.map(b=>`<label style="display:flex;align-items:center;gap:8px;font-size:12px;padding:5px 4px;cursor:pointer;border-radius:6px;" class="ib-i" data-name="${b}"><input type="checkbox" class="ic_b" value="${b}" ${invBranches.includes(b)?'checked':''} onchange="applyIF()"> ${b}</label>`).join('')}</div><div style="border-top:1px solid var(--border);margin-top:8px;padding-top:8px;display:flex;gap:6px;"><button onclick="resetIBr()" style="flex:1;padding:5px;border:1px solid var(--border);border-radius:6px;font-size:11px;cursor:pointer;background:transparent;color:var(--muted);font-family:'Noto Sans KR',sans-serif;">초기화</button><button onclick="toggleIDrop('idb')" style="flex:1;padding:5px;border:none;border-radius:6px;font-size:11px;cursor:pointer;background:#0891b2;color:#fff;font-family:'Noto Sans KR',sans-serif;">적용</button></div></div></div></div></div>
+  <div class="inv-sr" id="iSR"><div class="inv-sc"><div class="inv-sl">전체 재고금액</div><div class="inv-sv" style="color:#1a6fd4;">${fmtMil(tAmt)}백만원</div></div><div class="inv-sc"><div class="inv-sl">전체 수량</div><div class="inv-sv" style="color:#16a34a;">${fmt(tQty)}개</div></div><div class="inv-sc"><div class="inv-sl">전월마감 대비</div><div class="inv-sv" style="color:${diff>=0?'#16a34a':'#dc2626'};">${diff>=0?'▲':'▼'}${fmtMil(Math.abs(diff))}백만 (${diff>=0?'+':''}${pct}%)</div></div></div>
+  <div class="inv-2x2"><div class="inv-cc"><div class="inv-cl">채널별 재고금액 비율</div><div style="position:relative;height:120px;"><canvas id="ic1"></canvas></div><div class="inv-leg" id="il1"></div></div><div class="inv-cc"><div class="inv-cl">영업점 Top 10</div><div style="position:relative;height:${Math.max(10,top10.length)*22+30}px;"><canvas id="ic2"></canvas></div></div><div class="inv-cc"><div class="inv-cl">주간 재고 추이</div><div style="position:relative;height:120px;"><canvas id="ic3"></canvas></div></div><div class="inv-cc"><div class="inv-cl">전월마감 대비 증감 (백만원)</div><div style="position:relative;height:${Math.max(10,filt.length)*20+30}px;"><canvas id="ic4"></canvas></div></div></div>
+  <div class="inv-to"><table id="iBT"><thead class="inv-hd"><tr><th onclick="sortIT('iBT',0,this)">영업점<span class="si"></span></th><th onclick="sortIT('iBT',1,this)">채널<span class="si"></span></th><th onclick="sortIT('iBT',2,this)">판매유형<span class="si"></span></th><th style="text-align:right;" onclick="sortIT('iBT',3,this)">수량<span class="si"></span></th><th style="text-align:right;" onclick="sortIT('iBT',4,this)">금액(백만)<span class="si"></span></th><th style="text-align:right;" onclick="sortIT('iBT',5,this)">전월比<span class="si"></span></th><th style="text-align:right;" onclick="sortIT('iBT',6,this)">전주比<span class="si"></span></th><th>비중</th></tr><tr class="inv-tr" id="iBTot"><td><strong>합계</strong></td><td>—</td><td>—</td><td style="text-align:right;"><strong>${fmt(tQty)}</strong></td><td style="text-align:right;"><strong>${fmtMil(tAmt)}</strong></td><td style="text-align:right;" class="${diff>=0?'inv-up':'inv-dn'}"><strong>${diff>=0?'▲':'▼'}${fmtMil(Math.abs(diff))}</strong></td><td style="text-align:right;">—</td><td>—</td></tr></thead><tbody id="iBTB"></tbody></table></div></div>
+  <div class="inv-section"><div class="inv-sh"><div class="inv-st"><div class="inv-dot" style="background:#dc2626;"></div>장르별 재고</div><span style="font-size:11px;color:var(--dim);">기준일: ${gL||'-'}${gC?` · 전월마감: ${gC}`:''}</span></div>
+  <div class="inv-1x2"><div class="inv-cc"><div class="inv-cl">장르별 재고금액 비율</div><div style="position:relative;height:130px;"><canvas id="ic5"></canvas></div><div class="inv-leg" id="il5"></div></div><div class="inv-cc"><div class="inv-cl">장르별 현재 vs 전월마감 (백만원)</div><div style="position:relative;height:160px;"><canvas id="ic6"></canvas></div></div></div>
+  <div class="inv-to"><table id="iGT"><thead class="inv-hd"><tr><th onclick="sortIT('iGT',0,this)">장르<span class="si"></span></th><th style="text-align:right;" onclick="sortIT('iGT',1,this)">수량<span class="si"></span></th><th style="text-align:right;" onclick="sortIT('iGT',2,this)">금액(백만)<span class="si"></span></th><th style="text-align:right;" onclick="sortIT('iGT',3,this)">전월比<span class="si"></span></th><th style="text-align:right;" onclick="sortIT('iGT',4,this)">전주比<span class="si"></span></th><th>비중</th></tr><tr class="inv-tr"><td><strong>합계</strong></td><td style="text-align:right;"><strong>${fmt(gLD.reduce((s,d)=>s+(d.quantity||0),0))}</strong></td><td style="text-align:right;"><strong>${fmtMil(gTot)}</strong></td><td style="text-align:right;" class="${gTot>=(gCAmts.reduce((a,b)=>a+b,0)||0)?'inv-up':'inv-dn'}"><strong>${diffMilStr(gTot,gCAmts.reduce((a,b)=>a+b,0)||null)}</strong></td><td style="text-align:right;">—</td><td>—</td></tr></thead><tbody>${genres.map((g,i)=>{const qty=gLD.filter(d=>d.genre===g).reduce((s,d)=>s+(d.quantity||0),0),amt=gAmts[i],cAmt=gCAmts[i],pAmt=gPD.filter(d=>d.genre===g).reduce((s,d)=>s+(d.amount||0),0),p=gTot>0?Math.round(amt/gTot*100):0;return`<tr class="inv-dr"><td style="font-weight:500;">${g}</td><td style="text-align:right;">${fmt(qty)}</td><td style="text-align:right;color:#1a6fd4;font-weight:500;">${fmtMil(amt)}</td><td style="text-align:right;" class="${amt>=cAmt?'inv-up':'inv-dn'}">${diffMilStr(amt,cAmt||null)}</td><td style="text-align:right;" class="${amt>=pAmt?'inv-up':'inv-dn'}">${diffMilStr(amt,pAmt||null)}</td><td><div class="inv-bw"><div class="inv-bb"><div class="inv-bf" style="width:${p}%;background:${CC[i%CC.length]};"></div></div><span style="font-size:10px;color:var(--dim);">${p}%</span></div></td></tr>`;}).join('')}</tbody></table></div></div>
+  <div class="inv-section"><div class="inv-sh"><div class="inv-st"><div class="inv-dot" style="background:#7c3aed;"></div>매입처별 재고</div><span style="font-size:11px;color:var(--dim);">기준일: ${sL||'-'}${sC?` · 전월마감: ${sC}`:''}</span></div>
+  <div class="inv-1x2"><div class="inv-cc"><div class="inv-cl">매입처 Top 10 재고금액 (백만원)</div><div style="position:relative;height:${sTop10.length*22+40}px;"><canvas id="ic7"></canvas></div></div><div class="inv-cc"><div class="inv-cl">매입처 Top 10 전월 대비 (백만원)</div><div style="position:relative;height:${sTop10.length*22+40}px;"><canvas id="ic8"></canvas></div></div></div>
+  <div class="inv-to"><table id="iST"><thead class="inv-hd"><tr><th onclick="sortIT('iST',0,this)">코드<span class="si"></span></th><th onclick="sortIT('iST',1,this)">매입처명<span class="si"></span></th><th style="text-align:right;" onclick="sortIT('iST',2,this)">수량<span class="si"></span></th><th style="text-align:right;" onclick="sortIT('iST',3,this)">금액(백만)<span class="si"></span></th><th style="text-align:right;" onclick="sortIT('iST',4,this)">전월比<span class="si"></span></th><th style="text-align:right;" onclick="sortIT('iST',5,this)">전주比<span class="si"></span></th><th>비중</th></tr><tr class="inv-tr"><td>—</td><td><strong>합계</strong></td><td style="text-align:right;"><strong>${fmt(sQTot)}</strong></td><td style="text-align:right;"><strong>${fmtMil(sTot)}</strong></td><td style="text-align:right;" class="${sTot>=sCTot?'inv-up':'inv-dn'}"><strong>${diffMilStr(sTot,sCTot||null)}</strong></td><td style="text-align:right;" class="${sTot>=sPTot?'inv-up':'inv-dn'}"><strong>${diffMilStr(sTot,sPTot||null)}</strong></td><td>—</td></tr></thead><tbody>${sLD.sort((a,b)=>(b.amount||0)-(a.amount||0)).map((d)=>{const cl=sCD.find(c=>c.supplier_code===d.supplier_code),pv=sPD.find(p=>p.supplier_code===d.supplier_code),p=sTot>0?Math.round((d.amount||0)/sTot*100):0;return`<tr class="inv-dr"><td style="font-size:10px;color:var(--dim);">${d.supplier_code||'-'}</td><td style="font-weight:500;">${d.supplier_name}</td><td style="text-align:right;">${fmt(d.quantity)}</td><td style="text-align:right;color:#1a6fd4;font-weight:500;">${fmtMil(d.amount)}</td><td style="text-align:right;" class="${(d.amount||0)>=(cl?.amount||0)?'inv-up':'inv-dn'}">${diffMilStr(d.amount,cl?.amount)}</td><td style="text-align:right;" class="${(d.amount||0)>=(pv?.amount||0)?'inv-up':'inv-dn'}">${diffMilStr(d.amount,pv?.amount)}</td><td><div class="inv-bw"><div class="inv-bb"><div class="inv-bf" style="width:${p}%;background:#7c3aed;"></div></div><span style="font-size:10px;color:var(--dim);">${p}%</span></div></td></tr>`;}).join('')}</tbody></table></div></div></div>`;
+  el.innerHTML=html;
+  renderIBRows();
+  setTimeout(()=>{
+    mkChart('ic1',{type:'doughnut',data:{labels:Object.keys(chMap),datasets:[{data:Object.values(chMap).map(v=>Math.round(v/1000000)),backgroundColor:CHART_COLORS,borderWidth:2,borderColor:'#fff'}]},options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{display:false}}}});
+    const l1=document.getElementById('il1');if(l1)l1.innerHTML=Object.keys(chMap).map((k,i)=>{const p=chMap[k]&&tAmt?Math.round(chMap[k]/tAmt*100):0;return`<span><div class="inv-lsq" style="background:${CHART_COLORS[i%CHART_COLORS.length]};"></div>${k} ${p}%</span>`;}).join('');
+    mkChart('ic2',{type:'bar',data:{labels:top10.map(d=>d.branch),datasets:[{data:top10.map(d=>Math.round((d.amount||0)/1000000)),backgroundColor:'rgba(26,111,212,.15)',borderColor:'#1a6fd4',borderWidth:1.5,borderRadius:3}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>ctx.raw+'백만원'}}},scales:{x:{ticks:{callback:v=>v+'백만',font:{size:9},color:'#9aa0b0'},grid:{color:'rgba(0,0,0,.05)'}},y:{ticks:{font:{size:9},color:'#9aa0b0'},grid:{display:false}}}}});
+    mkChart('ic3',{type:'line',data:{labels:allDates,datasets:[{label:'재고금액',data:lineTotals,borderColor:'#1a6fd4',backgroundColor:'rgba(26,111,212,.08)',borderWidth:2,pointRadius:3,fill:true,tension:0.3},{label:'전월마감',data:new Array(allDates.length).fill(Math.round(cTot/1000000)),borderColor:'#dc2626',borderWidth:1.5,borderDash:[4,3],pointRadius:0,fill:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:9},color:'#9aa0b0'},grid:{display:false}},y:{ticks:{callback:v=>v+'백만',font:{size:9},color:'#9aa0b0'},grid:{color:'rgba(0,0,0,.05)'}}}}});
+    mkChart('ic4',{type:'bar',data:{labels:filt.map(d=>d.branch),datasets:[{data:diffs,backgroundColor:diffs.map(v=>v>=0?'rgba(22,163,74,.2)':'rgba(220,38,38,.2)'),borderColor:diffs.map(v=>v>=0?'#16a34a':'#dc2626'),borderWidth:1.5,borderRadius:3}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>(ctx.raw>=0?'▲':'▼')+Math.abs(ctx.raw)+'백만'}}},scales:{x:{ticks:{callback:v=>(v>=0?'+':'')+v+'백만',font:{size:9},color:'#9aa0b0'},grid:{color:'rgba(0,0,0,.05)'}},y:{ticks:{font:{size:9},color:'#9aa0b0'},grid:{display:false}}}}});
+    mkChart('ic5',{type:'doughnut',data:{labels:genres,datasets:[{data:gAmts.map(v=>Math.round(v/1000000)),backgroundColor:CHART_COLORS,borderWidth:2,borderColor:'#fff'}]},options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{display:false}}}});
+    const l5=document.getElementById('il5');if(l5)l5.innerHTML=genres.map((g,i)=>{const p=gAmts[i]&&gTot?Math.round(gAmts[i]/gTot*100):0;return`<span><div class="inv-lsq" style="background:${CHART_COLORS[i%CHART_COLORS.length]};"></div>${g} ${p}%</span>`;}).join('');
+    mkChart('ic6',{type:'bar',data:{labels:genres,datasets:[{label:'현재',data:gAmts.map(v=>Math.round(v/1000000)),backgroundColor:'rgba(26,111,212,.2)',borderColor:'#1a6fd4',borderWidth:1.5,borderRadius:3},{label:'전월마감',data:gCAmts.map(v=>Math.round(v/1000000)),backgroundColor:'rgba(220,38,38,.15)',borderColor:'#dc2626',borderWidth:1.5,borderRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>ctx.dataset.label+': '+ctx.raw+'백만'}}},scales:{x:{ticks:{font:{size:10},color:'#9aa0b0'},grid:{display:false}},y:{ticks:{callback:v=>v+'백만',font:{size:9},color:'#9aa0b0'},grid:{color:'rgba(0,0,0,.05)'}}}}});
+    mkChart('ic7',{type:'bar',data:{labels:sTop10.map(d=>d.supplier_name),datasets:[{data:sTop10.map(d=>Math.round((d.amount||0)/1000000)),backgroundColor:'rgba(124,58,237,.2)',borderColor:'#7c3aed',borderWidth:1.5,borderRadius:3}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>ctx.raw+'백만원'}}},scales:{x:{ticks:{callback:v=>v+'백만',font:{size:9},color:'#9aa0b0'},grid:{color:'rgba(0,0,0,.05)'}},y:{ticks:{font:{size:9},color:'#9aa0b0'},grid:{display:false}}}}});
+    mkChart('ic8',{type:'bar',data:{labels:sTop10.map(d=>d.supplier_name),datasets:[{data:sDiffs,backgroundColor:sDiffs.map(v=>v>=0?'rgba(22,163,74,.2)':'rgba(220,38,38,.2)'),borderColor:sDiffs.map(v=>v>=0?'#16a34a':'#dc2626'),borderWidth:1.5,borderRadius:3}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>(ctx.raw>=0?'▲':'▼')+Math.abs(ctx.raw)+'백만'}}},scales:{x:{ticks:{callback:v=>(v>=0?'+':'')+v+'백만',font:{size:9},color:'#9aa0b0'},grid:{color:'rgba(0,0,0,.05)'}},y:{ticks:{font:{size:9},color:'#9aa0b0'},grid:{display:false}}}}});
+    document.addEventListener('click',e=>{['idc','idt','idb'].forEach(id=>{const el=document.getElementById(id);if(el&&!e.target.closest('#'+id)&&!e.target.closest(`button[onclick*="${id}"]`))el.style.display='none';});});
+  },50);
 }
 
-function getBranchFiltered(data,dateStr){return data.filter(d=>d.date===dateStr&&(invChannels.length===0||invChannels.includes(d.type_a||'기타'))&&(invTypes.length===0||invTypes.includes(d.type_b||'기타'))&&(invBranches.length===0||invBranches.includes(d.branch)));}
-
-function renderBranchTab(){
-  const data=dashInvData.branch||[];
-  if(!data.length)return`<div class="empty-state">📭<br><br>데이터가 없습니다<br><span style="font-size:11px;color:var(--dim)">구글 시트에서 동기화 버튼을 눌러주세요</span></div>`;
-  const latest=getLatestDate(data),prevWeek=getPrevWeekDate(data,latest),closing=getLatestClosingDate(data,latest);
-  const allChannels=[...new Set(data.map(d=>d.type_a).filter(Boolean))].sort();
-  const allTypes=[...new Set(data.map(d=>d.type_b).filter(Boolean))].sort();
-  const allBranches=[...new Set(data.map(d=>d.branch).filter(Boolean))].sort();
-  if(invTypes.length===0)invTypes=[...allTypes];
-  const latestFiltered=getBranchFiltered(data,latest),closeFiltered=data.filter(d=>d.date===closing);
-  const totalQty=latestFiltered.reduce((s,d)=>s+(d.quantity||0),0),totalAmt=latestFiltered.reduce((s,d)=>s+(d.amount||0),0);
-  const closeTotal=latestFiltered.reduce((s,d)=>{const c=closeFiltered.find(c=>c.branch===d.branch);return s+(c?.amount||0);},0);
-  const diff=totalAmt-closeTotal,pct=closeTotal>0?((diff/closeTotal)*100).toFixed(1):0;
-  let html=`<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px;position:relative;">
-    <div style="position:relative;"><button onclick="toggleBranchDrop('dropCh')" style="padding:6px 14px;border-radius:20px;border:1px solid var(--c-dash);background:var(--c-dash);color:#fff;font-size:11px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;display:flex;align-items:center;gap:6px;">채널별 <span id="lblCh">${invChannels.length===allChannels.length?'전체':invChannels.join('+')}</span> ▾</button>
-      <div id="dropCh" style="display:none;position:absolute;top:34px;left:0;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 14px;z-index:100;min-width:130px;box-shadow:0 4px 12px rgba(0,0,0,.1);"><label style="display:flex;align-items:center;gap:8px;font-size:12px;padding:4px 0;cursor:pointer;"><input type="checkbox" id="ch_all" ${invChannels.length===allChannels.length?'checked':''} onchange="toggleBranchAll('ch')"> 전체</label><hr style="border:none;border-top:0.5px solid var(--border);margin:6px 0;">${allChannels.map(c=>`<label style="display:flex;align-items:center;gap:8px;font-size:12px;padding:4px 0;cursor:pointer;"><input type="checkbox" class="chk_ch" value="${c}" ${invChannels.includes(c)?'checked':''} onchange="updateBranchFilter()"> ${c}</label>`).join('')}</div></div>
-    <div style="position:relative;"><button onclick="toggleBranchDrop('dropTy')" style="padding:6px 14px;border-radius:20px;border:1px solid var(--c-etc);background:var(--c-etc);color:#fff;font-size:11px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;display:flex;align-items:center;gap:6px;">판매유형별 <span id="lblTy">${invTypes.length===allTypes.length?'전체':invTypes.join('+')}</span> ▾</button>
-      <div id="dropTy" style="display:none;position:absolute;top:34px;left:0;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 14px;z-index:100;min-width:130px;box-shadow:0 4px 12px rgba(0,0,0,.1);"><label style="display:flex;align-items:center;gap:8px;font-size:12px;padding:4px 0;cursor:pointer;"><input type="checkbox" id="ty_all" ${invTypes.length===allTypes.length?'checked':''} onchange="toggleBranchAll('ty')"> 전체</label><hr style="border:none;border-top:0.5px solid var(--border);margin:6px 0;">${allTypes.map(t=>`<label style="display:flex;align-items:center;gap:8px;font-size:12px;padding:4px 0;cursor:pointer;"><input type="checkbox" class="chk_ty" value="${t}" ${invTypes.includes(t)?'checked':''} onchange="updateBranchFilter()"> ${t}</label>`).join('')}</div></div>
-    <div style="position:relative;"><button onclick="toggleBranchDrop('dropBr')" style="padding:6px 14px;border-radius:20px;border:1px solid #0891b2;background:#0891b2;color:#fff;font-size:11px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;display:flex;align-items:center;gap:6px;">🔍 지점 선택 ${invBranches.length>0?`<span style="background:#fff;color:#0891b2;border-radius:10px;padding:1px 7px;font-weight:700;font-size:10px;">${invBranches.length}</span>`:''}▾</button>
-      <div id="dropBr" style="display:none;position:absolute;top:34px;left:0;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px;z-index:100;width:220px;box-shadow:0 4px 12px rgba(0,0,0,.12);"><input id="branchSearch" type="text" placeholder="지점명 검색..." oninput="filterBranchSearch()" style="width:100%;padding:7px 10px;border:1px solid var(--border);border-radius:7px;font-size:12px;outline:none;box-sizing:border-box;margin-bottom:8px;font-family:'Noto Sans KR',sans-serif;background:var(--surface2);color:var(--text);"><div id="branchList" style="max-height:180px;overflow-y:auto;">${allBranches.map(b=>`<label style="display:flex;align-items:center;gap:8px;font-size:12px;padding:5px 4px;cursor:pointer;border-radius:6px;" class="br-item" data-name="${b}"><input type="checkbox" class="chk_br" value="${b}" ${invBranches.includes(b)?'checked':''} onchange="updateBranchFilter()"> ${b}</label>`).join('')}</div><div style="border-top:1px solid var(--border);margin-top:8px;padding-top:8px;display:flex;gap:6px;"><button onclick="resetBranchSelect()" style="flex:1;padding:6px;border:1px solid var(--border);border-radius:7px;font-size:11px;cursor:pointer;background:transparent;color:var(--muted);font-family:'Noto Sans KR',sans-serif;">전체 초기화</button><button onclick="toggleBranchDrop('dropBr')" style="flex:1;padding:6px;border:none;border-radius:7px;font-size:11px;cursor:pointer;background:#0891b2;color:#fff;font-family:'Noto Sans KR',sans-serif;">적용</button></div></div></div>
-  </div>
-  <div id="branchTags" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:${invBranches.length>0?'12px':'0'}">${invBranches.map(b=>`<span style="display:flex;align-items:center;gap:4px;padding:3px 10px;background:rgba(8,145,178,.1);border:1px solid #0891b2;border-radius:20px;font-size:11px;color:#0891b2;">${b}<span onclick="removeBranch('${b}')" style="cursor:pointer;font-weight:700;margin-left:2px;">×</span></span>`).join('')}</div>
-  <div class="summary-row" id="branchCards">
-    <div class="sum-card" style="border-top:2px solid var(--accent)"><div class="sum-num" style="color:var(--accent)">${fmtMil(totalAmt)}백만원</div><div class="sum-label">전체 재고금액</div></div>
-    <div class="sum-card" style="border-top:2px solid var(--c-analysis)"><div class="sum-num" style="color:var(--c-analysis)">${fmt(totalQty)}개</div><div class="sum-label">전체 수량</div></div>
-    <div class="sum-card" style="border-top:2px solid ${diff>=0?'#16a34a':'#dc2626'}"><div class="sum-num" style="color:${diff>=0?'#16a34a':'#dc2626'}">${diff>=0?'▲':'▼'}${fmtMil(Math.abs(diff))}백만</div><div class="sum-label">전월마감 대비 (${diff>=0?'+':''}${pct}%)</div></div>
-  </div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px;"><div style="font-size:11px;font-weight:600;color:var(--muted);margin-bottom:6px;">채널별 재고금액 비율</div><canvas id="chartTypeA" height="60"></canvas></div>
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px;"><div style="font-size:11px;font-weight:600;color:var(--muted);margin-bottom:6px;">영업점 Top 10</div><canvas id="chartBranch" height="160"></canvas></div>
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px;"><div style="font-size:11px;font-weight:600;color:var(--muted);margin-bottom:6px;">주간 재고 추이</div><canvas id="chartLine" height="90"></canvas></div>
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px;"><div style="font-size:11px;font-weight:600;color:var(--muted);margin-bottom:6px;">전월마감 대비 증감 (백만원)</div><canvas id="chartWater" height="160"></canvas></div>
-  </div>
-  <div class="table-wrap" style="max-height:280px;overflow-y:auto;"><table><thead><tr><th>영업점</th><th>채널</th><th>판매유형</th><th style="text-align:right">수량 (개)</th><th style="text-align:right">금액 (백만원)</th><th style="text-align:right">전월마감比</th><th style="text-align:right">전주比</th></tr></thead><tbody id="branchTbody"></tbody><tfoot id="branchTfoot"></tfoot></table></div>`;
-  return html;
+function renderIBRows(){
+  const BD=dashInvData.branch||[];
+  const bL=getLatestDate(BD),bP=getPrevWeekDate(BD,bL),bC=getLatestClosingDate(BD,bL);
+  const filt=getBF(BD,bL).sort((a,b)=>(b.amount||0)-(a.amount||0));
+  const cF=BD.filter(d=>d.date===bC),pF=BD.filter(d=>d.date===bP);
+  const tAmt=filt.reduce((s,d)=>s+(d.amount||0),0);
+  const tbody=document.getElementById('iBTB');if(!tbody)return;
+  tbody.innerHTML=filt.map((d)=>{
+    const cl=cF.find(c=>c.branch===d.branch),pv=pF.find(p=>p.branch===d.branch);
+    const p=tAmt>0?Math.round((d.amount||0)/tAmt*100):0;
+    const isOn=(d.type_a||'').includes('온라인')||(d.type_a||'').includes('B2B')||(d.type_a||'').includes('이커머스');
+    return`<tr class="inv-dr"><td style="font-weight:500;">${d.branch}</td><td><span class="inv-bg ${isOn?'inv-bon':'inv-bof'}">${d.type_a||'-'}</span></td><td style="font-size:11px;color:var(--muted);">${d.type_b||'-'}</td><td style="text-align:right;">${fmt(d.quantity)}</td><td style="text-align:right;color:#1a6fd4;font-weight:500;">${fmtMil(d.amount)}</td><td style="text-align:right;" class="${(d.amount||0)>=(cl?.amount||0)?'inv-up':'inv-dn'}">${diffMilStr(d.amount,cl?.amount)}</td><td style="text-align:right;" class="${(d.amount||0)>=(pv?.amount||0)?'inv-up':'inv-dn'}">${diffMilStr(d.amount,pv?.amount)}</td><td><div class="inv-bw"><div class="inv-bb"><div class="inv-bf" style="width:${p}%;background:#1a6fd4;"></div></div><span style="font-size:10px;color:var(--dim);">${p}%</span></div></td></tr>`;
+  }).join('');
+}
+function toggleIDrop(id){['idc','idt','idb'].forEach(d=>{if(d!==id){const el=document.getElementById(d);if(el)el.style.display='none';}});const el=document.getElementById(id);if(el)el.style.display=el.style.display==='none'?'block':'none';if(id==='idb'){setTimeout(()=>{const s=document.getElementById('ibS');if(s)s.focus();},50);}}
+function toggleIAll(g){const a=document.getElementById('i'+g+'A');if(a)document.querySelectorAll('.ic_'+g).forEach(c=>c.checked=a.checked);applyIF();}
+function filterIBr(){const q=(document.getElementById('ibS')?.value||'').toLowerCase();document.querySelectorAll('.ib-i').forEach(el=>{el.style.display=el.dataset.name.toLowerCase().includes(q)?'flex':'none';});}
+function resetIBr(){invBranches=[];document.querySelectorAll('.ic_b').forEach(c=>c.checked=false);applyIF();const el=document.getElementById('idb');if(el)el.style.display='none';}
+function applyIF(){
+  invChannels=[...document.querySelectorAll('.ic_c:checked')].map(e=>e.value);
+  invTypes=[...document.querySelectorAll('.ic_t:checked')].map(e=>e.value);
+  invBranches=[...document.querySelectorAll('.ic_b:checked')].map(e=>e.value);
+  const BD=dashInvData.branch||[];
+  const allCh=[...new Set(BD.map(d=>d.type_a).filter(Boolean))].sort();
+  const allTy=[...new Set(BD.map(d=>d.type_b).filter(Boolean))].sort();
+  const lC=document.getElementById('ilC'),lT=document.getElementById('ilT');
+  if(lC)lC.textContent=invChannels.length===allCh.length?'전체':invChannels.join('+');
+  if(lT)lT.textContent=invTypes.length===allTy.length?'전체':invTypes.join('+');
+  const bL=getLatestDate(BD),bC=getLatestClosingDate(BD,bL);
+  const filt=getBF(BD,bL),cF=BD.filter(d=>d.date===bC);
+  const tAmt=filt.reduce((s,d)=>s+(d.amount||0),0),tQty=filt.reduce((s,d)=>s+(d.quantity||0),0);
+  const cTot=filt.reduce((s,d)=>{const c=cF.find(c=>c.branch===d.branch);return s+(c?.amount||0);},0);
+  const diff=tAmt-cTot,pct=cTot>0?((diff/cTot)*100).toFixed(1):0;
+  const sr=document.getElementById('iSR');
+  if(sr)sr.innerHTML=`<div class="inv-sc"><div class="inv-sl">전체 재고금액</div><div class="inv-sv" style="color:#1a6fd4;">${fmtMil(tAmt)}백만원</div></div><div class="inv-sc"><div class="inv-sl">전체 수량</div><div class="inv-sv" style="color:#16a34a;">${fmt(tQty)}개</div></div><div class="inv-sc"><div class="inv-sl">전월마감 대비</div><div class="inv-sv" style="color:${diff>=0?'#16a34a':'#dc2626'};">${diff>=0?'▲':'▼'}${fmtMil(Math.abs(diff))}백만 (${diff>=0?'+':''}${pct}%)</div></div>`;
+  const tot=document.getElementById('iBTot');
+  if(tot){tot.cells[3].innerHTML=`<strong>${fmt(tQty)}</strong>`;tot.cells[4].innerHTML=`<strong>${fmtMil(tAmt)}</strong>`;tot.cells[5].innerHTML=`<strong>${diff>=0?'▲':'▼'}${fmtMil(Math.abs(diff))}</strong>`;tot.cells[5].className=diff>=0?'inv-up':'inv-dn';}
+  renderIBRows();
+  const chMap={};filt.forEach(d=>{const k=d.type_a||'기타';chMap[k]=(chMap[k]||0)+(d.amount||0);});
+  const c1=activeCharts.find(c=>c.canvas?.id==='ic1');
+  if(c1){c1.data.labels=Object.keys(chMap);c1.data.datasets[0].data=Object.values(chMap).map(v=>Math.round(v/1000000));c1.update();const l1=document.getElementById('il1');if(l1)l1.innerHTML=Object.keys(chMap).map((k,i)=>{const p=chMap[k]&&tAmt?Math.round(chMap[k]/tAmt*100):0;return`<span><div class="inv-lsq" style="background:${CHART_COLORS[i%CHART_COLORS.length]};"></div>${k} ${p}%</span>`;}).join('');}
+  const top10=[...filt].sort((a,b)=>(b.amount||0)-(a.amount||0)).slice(0,10);
+  const c2=activeCharts.find(c=>c.canvas?.id==='ic2');if(c2){c2.data.labels=top10.map(d=>d.branch);c2.data.datasets[0].data=top10.map(d=>Math.round((d.amount||0)/1000000));c2.update();}
+  const allDates=[...new Set(BD.map(d=>d.date))].sort();
+  const lT2=allDates.map(date=>{const rows=BD.filter(d=>d.date===date&&invChannels.includes(d.type_a||'기타')&&invTypes.includes(d.type_b||'기타'));return Math.round(rows.reduce((s,d)=>s+(d.amount||0),0)/1000000);});
+  const c3=activeCharts.find(c=>c.canvas?.id==='ic3');if(c3){c3.data.labels=allDates;c3.data.datasets[0].data=lT2;c3.data.datasets[1].data=new Array(allDates.length).fill(Math.round(cTot/1000000));c3.update();}
+  const diffs2=filt.map(d=>{const c=cF.find(c=>c.branch===d.branch);return parseFloat((((d.amount||0)-(c?.amount||0))/1000000).toFixed(2));});
+  const c4=activeCharts.find(c=>c.canvas?.id==='ic4');if(c4){c4.data.labels=filt.map(d=>d.branch);c4.data.datasets[0].data=diffs2;c4.data.datasets[0].backgroundColor=diffs2.map(v=>v>=0?'rgba(22,163,74,.2)':'rgba(220,38,38,.2)');c4.data.datasets[0].borderColor=diffs2.map(v=>v>=0?'#16a34a':'#dc2626');c4.update();}
+}
+function sortIT(tid,col,th){
+  const table=document.getElementById(tid);if(!table)return;
+  const tbody=table.querySelector('tbody');const rows=[...tbody.querySelectorAll('tr.inv-dr')];
+  const isAsc=th.classList.contains('asc');
+  table.querySelectorAll('th').forEach(t=>{t.classList.remove('asc','desc');});
+  th.classList.add(isAsc?'desc':'asc');
+  rows.sort((a,b)=>{
+    const av=a.cells[col]?.textContent.replace(/[▲▼±,원백만개%]/g,'').trim()||'';
+    const bv=b.cells[col]?.textContent.replace(/[▲▼±,원백만개%]/g,'').trim()||'';
+    const an=parseFloat(av),bn=parseFloat(bv);
+    const cmp=isNaN(an)||isNaN(bn)?av.localeCompare(bv,'ko'):an-bn;
+    return isAsc?-cmp:cmp;
+  });
+  rows.forEach(r=>tbody.appendChild(r));
 }
 
-function filterBranchSearch(){const q=document.getElementById('branchSearch').value.toLowerCase();document.querySelectorAll('.br-item').forEach(el=>{el.style.display=el.dataset.name.toLowerCase().includes(q)?'flex':'none';});}
-function resetBranchSelect(){invBranches=[];document.querySelectorAll('.chk_br').forEach(c=>c.checked=false);updateBranchFilter();document.getElementById('dropBr').style.display='none';}
-function removeBranch(name){invBranches=invBranches.filter(b=>b!==name);const cb=document.querySelector(`.chk_br[value="${name}"]`);if(cb)cb.checked=false;updateBranchFilter();}
-function toggleBranchDrop(id){['dropCh','dropTy','dropBr'].forEach(d=>{if(d!==id)document.getElementById(d).style.display='none';});const el=document.getElementById(id);el.style.display=el.style.display==='none'?'block':'none';if(id==='dropBr'){setTimeout(()=>{const s=document.getElementById('branchSearch');if(s)s.focus();},50);}}
-function toggleBranchAll(g){const allCb=document.getElementById(g+'_all');document.querySelectorAll('.chk_'+g).forEach(c=>c.checked=allCb.checked);updateBranchFilter();}
-function updateBranchFilter(){
-  invChannels=[...document.querySelectorAll('.chk_ch:checked')].map(e=>e.value);invTypes=[...document.querySelectorAll('.chk_ty:checked')].map(e=>e.value);invBranches=[...document.querySelectorAll('.chk_br:checked')].map(e=>e.value);
-  const data=dashInvData.branch||[],allChannels=[...new Set(data.map(d=>d.type_a).filter(Boolean))].sort(),allTypes=[...new Set(data.map(d=>d.type_b).filter(Boolean))].sort();
-  const lbl=document.getElementById('lblCh'),lbl2=document.getElementById('lblTy');if(lbl)lbl.textContent=invChannels.length===allChannels.length?'전체':invChannels.join('+');if(lbl2)lbl2.textContent=invTypes.length===allTypes.length?'전체':invTypes.join('+');
-  const chAll=document.getElementById('ch_all'),tyAll=document.getElementById('ty_all');if(chAll)chAll.checked=invChannels.length===allChannels.length;if(tyAll)tyAll.checked=invTypes.length===allTypes.length;
-  const tags=document.getElementById('branchTags');if(tags){tags.style.marginBottom=invBranches.length>0?'12px':'0';tags.innerHTML=invBranches.map(b=>`<span style="display:flex;align-items:center;gap:4px;padding:3px 10px;background:rgba(8,145,178,.1);border:1px solid #0891b2;border-radius:20px;font-size:11px;color:#0891b2;">${b}<span onclick="removeBranch('${b}')" style="cursor:pointer;font-weight:700;margin-left:2px;">×</span></span>`).join('');}
-  updateBranchCharts();updateBranchTable();
-}
-function updateBranchCharts(){
-  const data=dashInvData.branch||[],latest=getLatestDate(data),closing=getLatestClosingDate(data,latest),allDates=[...new Set(data.map(d=>d.date))].sort();
-  const filtered=getBranchFiltered(data,latest),closeFiltered=data.filter(d=>d.date===closing);
-  const chMap={};filtered.forEach(d=>{const k=d.type_a||'기타';chMap[k]=(chMap[k]||0)+(d.amount||0);});
-  if(window._bc1){window._bc1.data.labels=Object.keys(chMap);window._bc1.data.datasets[0].data=Object.values(chMap);window._bc1.update();}
-  const top10=[...filtered].sort((a,b)=>(b.amount||0)-(a.amount||0)).slice(0,10);if(window._bc2){window._bc2.data.labels=top10.map(d=>d.branch);window._bc2.data.datasets[0].data=top10.map(d=>d.amount||0);window._bc2.update();}
-  const lineTotals=allDates.map(date=>{const rows=data.filter(d=>d.date===date&&invChannels.includes(d.type_a||'기타')&&invTypes.includes(d.type_b||'기타'));return rows.reduce((s,d)=>s+(d.amount||0),0);});const closingVal=lineTotals[0]||0;
-  if(window._bc3){window._bc3.data.labels=allDates;window._bc3.data.datasets[0].data=lineTotals;window._bc3.data.datasets[1].data=new Array(allDates.length).fill(closingVal);window._bc3.update();}
-  const diffs=filtered.map(d=>{const c=closeFiltered.find(c=>c.branch===d.branch);return((d.amount||0)-(c?.amount||0))/1000000;});
-  if(window._bc4){window._bc4.data.labels=filtered.map(d=>d.branch);window._bc4.data.datasets[0].data=diffs.map(v=>parseFloat(v.toFixed(2)));window._bc4.data.datasets[0].backgroundColor=diffs.map(v=>v>=0?'rgba(22,163,74,.2)':'rgba(220,38,38,.2)');window._bc4.data.datasets[0].borderColor=diffs.map(v=>v>=0?'#16a34a':'#dc2626');window._bc4.update();}
-  const totalAmt=filtered.reduce((s,d)=>s+(d.amount||0),0),totalQty=filtered.reduce((s,d)=>s+(d.quantity||0),0);
-  const closeTotal=filtered.reduce((s,d)=>{const c=closeFiltered.find(c=>c.branch===d.branch);return s+(c?.amount||0);},0);const diff=totalAmt-closeTotal,pct=closeTotal>0?((diff/closeTotal)*100).toFixed(1):0;
-  const cards=document.getElementById('branchCards');if(cards)cards.innerHTML=`<div class="sum-card" style="border-top:2px solid var(--accent)"><div class="sum-num" style="color:var(--accent)">${fmtMil(totalAmt)}백만원</div><div class="sum-label">전체 재고금액</div></div><div class="sum-card" style="border-top:2px solid var(--c-analysis)"><div class="sum-num" style="color:var(--c-analysis)">${fmt(totalQty)}개</div><div class="sum-label">전체 수량</div></div><div class="sum-card" style="border-top:2px solid ${diff>=0?'#16a34a':'#dc2626'}"><div class="sum-num" style="color:${diff>=0?'#16a34a':'#dc2626'}">${diff>=0?'▲':'▼'}${fmtMil(Math.abs(diff))}백만</div><div class="sum-label">전월마감 대비 (${diff>=0?'+':''}${pct}%)</div></div>`;
-}
-function updateBranchTable(){
-  const data=dashInvData.branch||[],latest=getLatestDate(data),prevWeek=getPrevWeekDate(data,latest),closing=getLatestClosingDate(data,latest);
-  const filtered=getBranchFiltered(data,latest).sort((a,b)=>(b.amount||0)-(a.amount||0));
-  const prevData=data.filter(d=>d.date===prevWeek),closeData=data.filter(d=>d.date===closing);
-  const tbody=document.getElementById('branchTbody'),tfoot=document.getElementById('branchTfoot');if(!tbody)return;
-  tbody.innerHTML=filtered.map((d,i)=>{const prev=prevData.find(p=>p.branch===d.branch),close=closeData.find(c=>c.branch===d.branch);return`<tr style="background:${i%2?'var(--surface2)':'transparent'}"><td style="font-weight:500">${d.branch}</td><td><span style="font-size:10px;padding:2px 8px;border-radius:10px;background:rgba(3,105,161,.08);color:var(--c-dash)">${d.type_a||'-'}</span></td><td><span style="font-size:10px;padding:2px 8px;border-radius:10px;background:rgba(124,58,237,.08);color:var(--c-etc)">${d.type_b||'-'}</span></td><td style="font-family:'DM Mono',monospace;text-align:right">${fmt(d.quantity)}</td><td style="font-family:'DM Mono',monospace;text-align:right;color:var(--accent);font-weight:600">${fmtMil(d.amount)}</td><td style="font-family:'DM Mono',monospace;text-align:right;color:${diffColor(d.amount,close?.amount)};font-size:11px">${diffMilStr(d.amount,close?.amount)}</td><td style="font-family:'DM Mono',monospace;text-align:right;color:${diffColor(d.amount,prev?.amount)};font-size:11px">${diffMilStr(d.amount,prev?.amount)}</td></tr>`;}).join('');
-  const totalQty=filtered.reduce((s,d)=>s+(d.quantity||0),0),totalAmt=filtered.reduce((s,d)=>s+(d.amount||0),0);
-  const prevTotal=filtered.reduce((s,d)=>{const p=prevData.find(p=>p.branch===d.branch);return s+(p?.amount||0);},0);
-  const closeTotal=filtered.reduce((s,d)=>{const c=closeData.find(c=>c.branch===d.branch);return s+(c?.amount||0);},0);
-  if(tfoot)tfoot.innerHTML=`<tr><td colspan="3" style="color:var(--muted)">합계</td><td style="font-family:'DM Mono',monospace;text-align:right">${fmt(totalQty)}</td><td style="font-family:'DM Mono',monospace;text-align:right;color:var(--accent);font-weight:600">${fmtMil(totalAmt)}</td><td style="font-family:'DM Mono',monospace;text-align:right;color:${diffColor(totalAmt,closeTotal)};font-size:11px">${diffMilStr(totalAmt,closeTotal||null)}</td><td style="font-family:'DM Mono',monospace;text-align:right;color:${diffColor(totalAmt,prevTotal)};font-size:11px">${diffMilStr(totalAmt,prevTotal||null)}</td></tr>`;
-}
-function createBranchCharts(){
-  const data=dashInvData.branch||[],latest=getLatestDate(data),closing=getLatestClosingDate(data,latest),allDates=[...new Set(data.map(d=>d.date))].sort();
-  const filtered=getBranchFiltered(data,latest),closeFiltered=data.filter(d=>d.date===closing);
-  const chMap={};filtered.forEach(d=>{const k=d.type_a||'기타';chMap[k]=(chMap[k]||0)+(d.amount||0);});
-  window._bc1=new Chart(document.getElementById('chartTypeA'),{type:'doughnut',data:{labels:Object.keys(chMap),datasets:[{data:Object.values(chMap),backgroundColor:CHART_COLORS,borderWidth:2,borderColor:'#fff'}]},options:{responsive:true,plugins:{legend:{position:'bottom',labels:{font:{size:10},padding:8}},tooltip:{callbacks:{label:ctx=>`${ctx.label}: ${fmtMil(ctx.raw)}백만원`}}}}});activeCharts.push(window._bc1);
-  const top10=[...filtered].sort((a,b)=>(b.amount||0)-(a.amount||0)).slice(0,10);
-  window._bc2=new Chart(document.getElementById('chartBranch'),{type:'bar',data:{labels:top10.map(d=>d.branch),datasets:[{data:top10.map(d=>d.amount||0),backgroundColor:'rgba(26,111,212,.15)',borderColor:'#1a6fd4',borderWidth:1.5,borderRadius:4}]},options:{indexAxis:'y',responsive:true,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${fmtMil(ctx.raw)}백만원`}}},scales:{x:{ticks:{callback:v=>fmtMil(v)+'백만',font:{size:9}},grid:{color:'rgba(0,0,0,.05)'}},y:{ticks:{font:{size:10}}}}}});activeCharts.push(window._bc2);
-  const lineTotals=allDates.map(date=>{const rows=data.filter(d=>d.date===date&&invChannels.includes(d.type_a||'기타')&&invTypes.includes(d.type_b||'기타'));return rows.reduce((s,d)=>s+(d.amount||0),0);});const closingVal=lineTotals[0]||0;
-  window._bc3=new Chart(document.getElementById('chartLine'),{type:'line',data:{labels:allDates,datasets:[{label:'재고금액',data:lineTotals,borderColor:'#1a6fd4',backgroundColor:'rgba(26,111,212,.08)',borderWidth:2,pointRadius:4,pointBackgroundColor:'#1a6fd4',fill:true,tension:0.3},{label:'전월마감',data:new Array(allDates.length).fill(closingVal),borderColor:'#dc2626',borderWidth:1.5,borderDash:[5,4],pointRadius:0,fill:false}]},options:{responsive:true,plugins:{legend:{position:'bottom',labels:{font:{size:10}}},tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${fmtMil(ctx.raw)}백만원`}}},scales:{x:{ticks:{font:{size:9}},grid:{display:false}},y:{ticks:{callback:v=>fmtMil(v)+'백만',font:{size:9}},grid:{color:'rgba(0,0,0,.05)'}}}}});activeCharts.push(window._bc3);
-  const diffs=filtered.map(d=>{const c=closeFiltered.find(c=>c.branch===d.branch);return parseFloat((((d.amount||0)-(c?.amount||0))/1000000).toFixed(2));});
-  window._bc4=new Chart(document.getElementById('chartWater'),{type:'bar',data:{labels:filtered.map(d=>d.branch),datasets:[{data:diffs,backgroundColor:diffs.map(v=>v>=0?'rgba(22,163,74,.2)':'rgba(220,38,38,.2)'),borderColor:diffs.map(v=>v>=0?'#16a34a':'#dc2626'),borderWidth:1.5,borderRadius:3}]},options:{indexAxis:'y',responsive:true,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.raw>=0?'▲':'▼'}${Math.abs(ctx.raw)}백만원`}}},scales:{x:{ticks:{callback:v=>(v>=0?'+':'')+v+'백만',font:{size:9}},grid:{color:ctx=>ctx.tick.value===0?'rgba(0,0,0,.3)':'rgba(0,0,0,.05)'}},y:{ticks:{font:{size:10}}}}}});activeCharts.push(window._bc4);
-  updateBranchTable();
-  document.addEventListener('click',e=>{if(!e.target.closest('#dropCh')&&!e.target.closest('button[onclick*="dropCh"]')){const el=document.getElementById('dropCh');if(el)el.style.display='none';}if(!e.target.closest('#dropTy')&&!e.target.closest('button[onclick*="dropTy"]')){const el=document.getElementById('dropTy');if(el)el.style.display='none';}if(!e.target.closest('#dropBr')&&!e.target.closest('button[onclick*="dropBr"]')){const el=document.getElementById('dropBr');if(el)el.style.display='none';}});
-}
 
-function renderGenreTab(){
-  const data=dashInvData.genre||[];if(!data.length)return`<div class="empty-state">📭<br><br>데이터가 없습니다</div>`;
-  const latest=getLatestDate(data),prevWeek=getPrevWeekDate(data,latest),closing=getLatestClosingDate(data,latest);
-  const latestData=data.filter(d=>d.date===latest),prevData=data.filter(d=>d.date===prevWeek),closeData=data.filter(d=>d.date===closing);
-  const genres=[...new Set(latestData.map(d=>d.genre))].sort();
-  let html=`<div class="meta-row"><span class="meta-tag">📅 기준일: ${latest||'-'}</span>${closing?`<span class="meta-tag">📌 전월마감: ${closing}</span>`:''}</div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px;">
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;"><div style="font-size:12px;font-weight:600;color:var(--muted);margin-bottom:12px;">장르별 재고금액 비율</div><canvas id="chartGenrePie" height="140"></canvas></div>
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;"><div style="font-size:12px;font-weight:600;color:var(--muted);margin-bottom:12px;">장르별 전월마감 대비</div><canvas id="chartGenreBar" height="140"></canvas></div>
-  </div>
-  <div class="table-wrap"><table><thead><tr><th>장르</th><th style="text-align:right">수량 (개)</th><th style="text-align:right">금액 (백만원)</th><th style="text-align:right">전월마감比</th><th style="text-align:right">전주比</th></tr></thead><tbody>`;
-  genres.forEach((g,i)=>{const rows=latestData.filter(d=>d.genre===g),qty=rows.reduce((s,d)=>s+(d.quantity||0),0),amt=rows.reduce((s,d)=>s+(d.amount||0),0),prevAmt=prevData.filter(d=>d.genre===g).reduce((s,d)=>s+(d.amount||0),0),closeAmt=closeData.filter(d=>d.genre===g).reduce((s,d)=>s+(d.amount||0),0);html+=`<tr style="background:${i%2?'var(--surface2)':'transparent'}"><td style="font-weight:500">${g}</td><td style="font-family:'DM Mono',monospace;text-align:right">${fmt(qty)}</td><td style="font-family:'DM Mono',monospace;text-align:right;color:var(--accent);font-weight:600">${fmtMil(amt)}</td><td style="font-family:'DM Mono',monospace;text-align:right;color:${diffColor(amt,closeAmt||null)};font-size:11px">${diffMilStr(amt,closeAmt||null)}</td><td style="font-family:'DM Mono',monospace;text-align:right;color:${diffColor(amt,prevAmt||null)};font-size:11px">${diffMilStr(amt,prevAmt||null)}</td></tr>`;});
-  html+=`</tbody></table></div>`;return html;
-}
-function createGenreCharts(){
-  const data=dashInvData.genre||[],latest=getLatestDate(data),closing=getLatestClosingDate(data,latest);
-  const latestData=data.filter(d=>d.date===latest),closeData=data.filter(d=>d.date===closing);
-  const genres=[...new Set(latestData.map(d=>d.genre))].sort();
-  const amts=genres.map(g=>latestData.filter(d=>d.genre===g).reduce((s,d)=>s+(d.amount||0),0));
-  const closeAmts=genres.map(g=>closeData.filter(d=>d.genre===g).reduce((s,d)=>s+(d.amount||0),0));
-  mkChart('chartGenrePie',{type:'doughnut',data:{labels:genres,datasets:[{data:amts,backgroundColor:CHART_COLORS,borderWidth:2,borderColor:'#fff'}]},options:{responsive:true,plugins:{legend:{position:'bottom',labels:{font:{size:11},padding:10}},tooltip:{callbacks:{label:ctx=>`${ctx.label}: ${fmt(ctx.raw)}원`}}}}});
-  mkChart('chartGenreBar',{type:'bar',data:{labels:genres,datasets:[{label:'현재',data:amts,backgroundColor:'rgba(26,111,212,.2)',borderColor:'#1a6fd4',borderWidth:1.5,borderRadius:4},{label:'전월마감',data:closeAmts,backgroundColor:'rgba(220,38,38,.15)',borderColor:'#dc2626',borderWidth:1.5,borderRadius:4}]},options:{responsive:true,plugins:{legend:{position:'bottom',labels:{font:{size:11}}},tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${fmt(ctx.raw)}원`}}},scales:{y:{ticks:{callback:v=>fmt(v),font:{size:9}},grid:{color:'rgba(0,0,0,.05)'}},x:{ticks:{font:{size:11}}}}}});
-}
-
-function renderSupplierTab(){
-  const data=dashInvData.supplier||[];if(!data.length)return`<div class="empty-state">📭<br><br>데이터가 없습니다</div>`;
-  const latest=getLatestDate(data),prevWeek=getPrevWeekDate(data,latest),closing=getLatestClosingDate(data,latest);
-  const latestData=data.filter(d=>d.date===latest),prevData=data.filter(d=>d.date===prevWeek),closeData=data.filter(d=>d.date===closing);
-  let html=`<div class="meta-row"><span class="meta-tag">📅 기준일: ${latest||'-'}</span>${closing?`<span class="meta-tag">📌 전월마감: ${closing}</span>`:''}</div>
-  <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:18px;"><div style="font-size:12px;font-weight:600;color:var(--muted);margin-bottom:12px;">매입처 Top 10 재고금액</div><canvas id="chartSupplier" height="100"></canvas></div>
-  <div class="table-wrap"><table><thead><tr><th>코드</th><th>매입처명</th><th style="text-align:right">수량 (개)</th><th style="text-align:right">금액 (백만원)</th><th style="text-align:right">전월마감比</th><th style="text-align:right">전주比</th></tr></thead><tbody>`;
-  latestData.sort((a,b)=>(b.amount||0)-(a.amount||0)).forEach((d,i)=>{const prev=prevData.find(p=>p.supplier_code===d.supplier_code&&p.supplier_name===d.supplier_name),close=closeData.find(c=>c.supplier_code===d.supplier_code&&c.supplier_name===d.supplier_name);html+=`<tr style="background:${i%2?'var(--surface2)':'transparent'}"><td style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted)">${d.supplier_code||'-'}</td><td style="font-weight:500">${d.supplier_name}</td><td style="font-family:'DM Mono',monospace;text-align:right">${fmt(d.quantity)}</td><td style="font-family:'DM Mono',monospace;text-align:right;color:var(--accent);font-weight:600">${fmtMil(d.amount)}</td><td style="font-family:'DM Mono',monospace;text-align:right;color:${diffColor(d.amount,close?.amount)};font-size:11px">${diffMilStr(d.amount,close?.amount)}</td><td style="font-family:'DM Mono',monospace;text-align:right;color:${diffColor(d.amount,prev?.amount)};font-size:11px">${diffMilStr(d.amount,prev?.amount)}</td></tr>`;});
-  html+=`</tbody></table></div>`;return html;
-}
-function createSupplierCharts(){const data=dashInvData.supplier||[],latest=getLatestDate(data),top10=[...data.filter(d=>d.date===latest)].sort((a,b)=>(b.amount||0)-(a.amount||0)).slice(0,10);mkChart('chartSupplier',{type:'bar',data:{labels:top10.map(d=>d.supplier_name),datasets:[{label:'재고금액',data:top10.map(d=>d.amount||0),backgroundColor:CHART_COLORS.map(c=>c+'33'),borderColor:CHART_COLORS,borderWidth:1.5,borderRadius:4}]},options:{indexAxis:'y',responsive:true,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${fmt(ctx.raw)}원`}}},scales:{x:{ticks:{callback:v=>fmt(v),font:{size:9}},grid:{color:'rgba(0,0,0,.05)'}},y:{ticks:{font:{size:10}}}}}});}
 
 const HOLIDAYS_KR={'2026-01-01':'신정','2026-01-28':'설날연휴','2026-01-29':'설날','2026-01-30':'설날연휴','2026-03-01':'삼일절','2026-05-05':'어린이날','2026-05-24':'부처님오신날','2026-06-06':'현충일','2026-08-15':'광복절','2026-09-24':'추석연휴','2026-09-25':'추석','2026-09-26':'추석연휴','2026-10-03':'개천절','2026-10-09':'한글날','2026-12-25':'성탄절'};
 function isWeekendDate(d){const day=d.getDay();return day===0||day===6;}
