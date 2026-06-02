@@ -340,7 +340,7 @@ async function removeAdmin(uid){await _supa.from('users').update({role:'member'}
 initAuth();
 
 let dashInvData={branch:[],genre:[],supplier:[]},dashCalData=null;
-let dashInvLoading=false,dashCalLoading=false,invTab='branch';
+let dashInvLoading=false,dashCalLoading=false;
 let invChannels=[],invTypes=[],invBranches=[],calView='week';
 const todayD=new Date();
 
@@ -367,8 +367,7 @@ function getWeekDates(){const d=new Date(todayD),day=d.getDay();const mon=new Da
 let activeCharts=[];
 function destroyCharts(){activeCharts.forEach(c=>c.destroy());activeCharts=[];}
 function mkChart(id,config){const el=document.getElementById(id);if(!el)return;activeCharts.push(new Chart(el,config));}
-const CHART_COLORS=['#1a6fd4','#16a34a','#dc2626','#ea580c','#7c3aed','#0891b2','#db2777','#ca8a04'];
-
+const CHART_COLORS=['#1a6fd4','#16a34a','#dc2626','#ea580c','#7c3aed','#0891b2','#db2777','#ca8a04'];const CC=CHART_COLORS;
 function getBF(data,dateStr){return data.filter(d=>d.date===dateStr&&(invChannels.length===0||invChannels.includes(d.type_a||'기타'))&&(invTypes.length===0||invTypes.includes(d.type_b||'기타'))&&(invBranches.length===0||invBranches.includes(d.branch)));}
 
 function renderDashInv(){
