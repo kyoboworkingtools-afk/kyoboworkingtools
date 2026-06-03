@@ -177,6 +177,7 @@
   let selectedFile = null;
   let cardList = JSON.parse(localStorage.getItem('businessCards') || '[]');
   let lastSavedCard = null;
+  let lastRawText = '';
 
   window.onload = () => renderTable();
 
@@ -212,6 +213,7 @@
       const response = await fetch(APPS_SCRIPT_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ imageBase64: base64, mimeType: mimeType }) });
       const result = await response.json();
       if (result.success && result.data) {
+        lastRawText = result.rawText || '';
         fillForm(result.data);
         document.getElementById('resultSection').style.display = 'block';
         document.getElementById('resultSection').scrollIntoView({ behavior: 'smooth' });
@@ -269,6 +271,7 @@
       address: document.getElementById('f_address').value,
       website: document.getElementById('f_website').value,
       memo: document.getElementById('f_memo').value,
+      rawText: lastRawText,
       savedAt: new Date().toLocaleString('ko-KR')
     };
 
