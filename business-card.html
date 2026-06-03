@@ -6,285 +6,77 @@
   <title>명함 등록 | 업무 포털</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-
-    body {
-      font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
-      background: #f0f2f5;
-      min-height: 100vh;
-      color: #1a1a2e;
-    }
-
-    /* 헤더 */
-    .header {
-      background: #1a1a2e;
-      color: white;
-      padding: 14px 24px;
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-    }
-    .header a {
-      color: #aab4c8;
-      text-decoration: none;
-      font-size: 13px;
-    }
+    body { font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif; background: #f0f2f5; min-height: 100vh; color: #1a1a2e; }
+    .header { background: #1a1a2e; color: white; padding: 14px 24px; display: flex; align-items: center; gap: 16px; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+    .header a { color: #aab4c8; text-decoration: none; font-size: 13px; }
     .header a:hover { color: white; }
-    .header-title {
-      font-size: 16px;
-      font-weight: 700;
-      color: white;
-    }
+    .header-title { font-size: 16px; font-weight: 700; color: white; }
     .header-sep { color: #444; }
-
-    /* 메인 레이아웃 */
-    .container {
-      max-width: 900px;
-      margin: 32px auto;
-      padding: 0 20px;
-    }
-
-    .page-title {
-      font-size: 22px;
-      font-weight: 700;
-      color: #1a1a2e;
-      margin-bottom: 6px;
-    }
-    .page-sub {
-      font-size: 13px;
-      color: #666;
-      margin-bottom: 28px;
-    }
-
-    /* 카드 공통 */
-    .card {
-      background: white;
-      border-radius: 12px;
-      padding: 28px;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.07);
-      margin-bottom: 20px;
-    }
-    .card-title {
-      font-size: 14px;
-      font-weight: 700;
-      color: #1a1a2e;
-      margin-bottom: 18px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .card-title span {
-      font-size: 18px;
-    }
-
-    /* 업로드 영역 */
-    .upload-area {
-      border: 2px dashed #c8d0e0;
-      border-radius: 10px;
-      padding: 40px 20px;
-      text-align: center;
-      cursor: pointer;
-      transition: all 0.2s;
-      background: #f8f9fc;
-      position: relative;
-    }
-    .upload-area:hover, .upload-area.dragover {
-      border-color: #4169e1;
-      background: #eef1fc;
-    }
-    .upload-area input[type="file"] {
-      position: absolute;
-      inset: 0;
-      opacity: 0;
-      cursor: pointer;
-    }
+    .container { max-width: 900px; margin: 32px auto; padding: 0 20px; }
+    .page-title { font-size: 22px; font-weight: 700; color: #1a1a2e; margin-bottom: 6px; }
+    .page-sub { font-size: 13px; color: #666; margin-bottom: 28px; }
+    .card { background: white; border-radius: 12px; padding: 28px; box-shadow: 0 2px 12px rgba(0,0,0,0.07); margin-bottom: 20px; }
+    .card-title { font-size: 14px; font-weight: 700; color: #1a1a2e; margin-bottom: 18px; display: flex; align-items: center; gap: 8px; }
+    .card-title span { font-size: 18px; }
+    .upload-area { border: 2px dashed #c8d0e0; border-radius: 10px; padding: 40px 20px; text-align: center; cursor: pointer; transition: all 0.2s; background: #f8f9fc; position: relative; }
+    .upload-area:hover, .upload-area.dragover { border-color: #4169e1; background: #eef1fc; }
+    .upload-area input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
     .upload-icon { font-size: 40px; margin-bottom: 12px; }
     .upload-text { font-size: 15px; font-weight: 600; color: #333; margin-bottom: 6px; }
     .upload-sub { font-size: 12px; color: #888; }
-
-    /* 미리보기 */
-    .preview-wrap {
-      display: none;
-      margin-top: 16px;
-      text-align: center;
-    }
-    .preview-wrap img {
-      max-width: 100%;
-      max-height: 220px;
-      border-radius: 8px;
-      border: 1px solid #e0e0e0;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-    .preview-name {
-      font-size: 12px;
-      color: #888;
-      margin-top: 8px;
-    }
-
-    /* OCR 버튼 */
-    .btn-ocr {
-      display: block;
-      width: 100%;
-      padding: 14px;
-      background: #4169e1;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      font-size: 15px;
-      font-weight: 700;
-      cursor: pointer;
-      margin-top: 16px;
-      transition: background 0.2s;
-    }
+    .preview-wrap { display: none; margin-top: 16px; text-align: center; }
+    .preview-wrap img { max-width: 100%; max-height: 220px; border-radius: 8px; border: 1px solid #e0e0e0; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .preview-name { font-size: 12px; color: #888; margin-top: 8px; }
+    .btn-ocr { display: block; width: 100%; padding: 14px; background: #4169e1; color: white; border: none; border-radius: 8px; font-size: 15px; font-weight: 700; cursor: pointer; margin-top: 16px; transition: background 0.2s; }
     .btn-ocr:hover { background: #2f55d4; }
     .btn-ocr:disabled { background: #b0b8d0; cursor: not-allowed; }
-
-    /* 로딩 */
-    .loading {
-      display: none;
-      text-align: center;
-      padding: 20px;
-      color: #4169e1;
-      font-size: 14px;
-    }
-    .spinner {
-      display: inline-block;
-      width: 24px; height: 24px;
-      border: 3px solid #e0e5f5;
-      border-top-color: #4169e1;
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-      margin-right: 8px;
-      vertical-align: middle;
-    }
+    .loading { display: none; text-align: center; padding: 20px; color: #4169e1; font-size: 14px; }
+    .spinner { display: inline-block; width: 24px; height: 24px; border: 3px solid #e0e5f5; border-top-color: #4169e1; border-radius: 50%; animation: spin 0.8s linear infinite; margin-right: 8px; vertical-align: middle; }
     @keyframes spin { to { transform: rotate(360deg); } }
-
-    /* 결과 폼 */
     .result-section { display: none; }
-
-    .form-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 14px;
-    }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
     .form-group { display: flex; flex-direction: column; gap: 5px; }
     .form-group.full { grid-column: 1 / -1; }
-    .form-group label {
-      font-size: 12px;
-      font-weight: 600;
-      color: #555;
-    }
-    .form-group input, .form-group textarea {
-      padding: 10px 12px;
-      border: 1.5px solid #e0e5f0;
-      border-radius: 7px;
-      font-size: 14px;
-      font-family: inherit;
-      transition: border-color 0.2s;
-      color: #1a1a2e;
-      background: #fafbff;
-    }
-    .form-group input:focus, .form-group textarea:focus {
-      outline: none;
-      border-color: #4169e1;
-      background: white;
-    }
-    .form-group textarea { resize: vertical; min-height: 70px; }
-
-    /* 저장/초기화 버튼 */
-    .btn-row {
-      display: flex;
-      gap: 10px;
-      margin-top: 6px;
-    }
-    .btn-save {
-      flex: 1;
-      padding: 13px;
-      background: #1a1a2e;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      font-size: 14px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
+    .form-group label { font-size: 12px; font-weight: 600; color: #555; }
+    .form-group input, .form-group textarea { padding: 10px 12px; border: 1.5px solid #e0e5f0; border-radius: 7px; font-size: 14px; font-family: inherit; transition: border-color 0.2s; color: #1a1a2e; background: #fafbff; }
+    .form-group input:focus, .form-group textarea:focus { outline: none; border-color: #4169e1; background: white; }
+    .form-group textarea { resize: vertical; min-height: 60px; }
+    /* 빠른 메모 버튼 */
+    .memo-section { grid-column: 1 / -1; }
+    .quick-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+    .quick-tag { padding: 7px 14px; border: 1.5px solid #d8deec; border-radius: 20px; background: #fff; font-size: 13px; color: #555; cursor: pointer; transition: all 0.15s; user-select: none; }
+    .quick-tag:hover { border-color: #4169e1; color: #4169e1; }
+    .quick-tag.active { background: #4169e1; border-color: #4169e1; color: #fff; font-weight: 600; }
+    .btn-row { display: flex; gap: 10px; margin-top: 6px; }
+    .btn-save { flex: 1; padding: 13px; background: #1a1a2e; color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; transition: background 0.2s; }
     .btn-save:hover { background: #2d2d50; }
-    .btn-reset {
-      padding: 13px 20px;
-      background: white;
-      color: #666;
-      border: 1.5px solid #ddd;
-      border-radius: 8px;
-      font-size: 14px;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
+    .btn-reset { padding: 13px 20px; background: white; color: #666; border: 1.5px solid #ddd; border-radius: 8px; font-size: 14px; cursor: pointer; transition: all 0.2s; }
     .btn-reset:hover { border-color: #aaa; color: #333; }
-
-    /* 상태 메시지 */
-    .status-msg {
-      display: none;
-      padding: 12px 16px;
-      border-radius: 8px;
-      font-size: 13px;
-      font-weight: 600;
-      margin-top: 12px;
-      text-align: center;
-    }
-    .status-msg.success {
-      background: #e8f5e9;
-      color: #2e7d32;
-      border: 1px solid #a5d6a7;
-    }
-    .status-msg.error {
-      background: #ffebee;
-      color: #c62828;
-      border: 1px solid #ef9a9a;
-    }
-
-    /* 목록 테이블 */
+    .status-msg { display: none; padding: 12px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; margin-top: 12px; text-align: center; }
+    .status-msg.success { background: #e8f5e9; color: #2e7d32; border: 1px solid #a5d6a7; }
+    .status-msg.error { background: #ffebee; color: #c62828; border: 1px solid #ef9a9a; }
     .table-wrap { overflow-x: auto; }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 13px;
-    }
-    th {
-      background: #f0f2f8;
-      padding: 10px 12px;
-      text-align: left;
-      font-weight: 600;
-      color: #555;
-      white-space: nowrap;
-      border-bottom: 2px solid #e0e5f0;
-    }
-    td {
-      padding: 10px 12px;
-      border-bottom: 1px solid #f0f0f0;
-      color: #333;
-      white-space: nowrap;
-    }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { background: #f0f2f8; padding: 10px 12px; text-align: left; font-weight: 600; color: #555; white-space: nowrap; border-bottom: 2px solid #e0e5f0; }
+    td { padding: 10px 12px; border-bottom: 1px solid #f0f0f0; color: #333; white-space: nowrap; }
     tr:hover td { background: #f8f9ff; }
-    .empty-row td {
-      text-align: center;
-      color: #aaa;
-      padding: 30px;
-    }
-
-    /* 배지 */
-    .badge {
-      display: inline-block;
-      padding: 2px 8px;
-      border-radius: 20px;
-      font-size: 11px;
-      font-weight: 600;
-    }
+    .empty-row td { text-align: center; color: #aaa; padding: 30px; }
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 600; }
     .badge-new { background: #e3f2fd; color: #1565c0; }
-
+    .btn-vcard-sm { padding: 5px 11px; background: #16a34a; color: #fff; border: none; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+    .btn-vcard-sm:hover { background: #128a3e; }
+    .memo-cell { max-width: 200px; white-space: normal; font-size: 12px; color: #666; }
+    /* vCard 선택 팝업 */
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 200; align-items: center; justify-content: center; }
+    .modal-overlay.show { display: flex; }
+    .modal-box { background: #fff; border-radius: 14px; padding: 28px; max-width: 340px; width: 88%; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.2); }
+    .modal-icon { font-size: 40px; margin-bottom: 12px; }
+    .modal-title { font-size: 16px; font-weight: 700; color: #1a1a2e; margin-bottom: 8px; }
+    .modal-desc { font-size: 13px; color: #666; margin-bottom: 22px; line-height: 1.6; }
+    .modal-btns { display: flex; gap: 10px; }
+    .modal-btn { flex: 1; padding: 12px; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; border: none; }
+    .modal-btn.yes { background: #16a34a; color: #fff; }
+    .modal-btn.no { background: #f0f2f5; color: #666; }
     @media (max-width: 600px) {
       .form-grid { grid-template-columns: 1fr; }
       .container { margin: 16px auto; }
@@ -293,7 +85,6 @@
 </head>
 <body>
 
-<!-- 헤더 -->
 <div class="header">
   <a href="/">← 포털로 돌아가기</a>
   <span class="header-sep">|</span>
@@ -304,143 +95,101 @@
   <div class="page-title">📇 명함 디지털화</div>
   <div class="page-sub">명함 사진을 업로드하면 AI가 자동으로 내용을 읽어 정리해드립니다</div>
 
-  <!-- 업로드 카드 -->
   <div class="card">
     <div class="card-title"><span>📷</span> 명함 사진 업로드</div>
-
     <div class="upload-area" id="uploadArea">
       <input type="file" id="fileInput" accept="image/*" onchange="onFileSelected(event)">
       <div class="upload-icon">🖼️</div>
       <div class="upload-text">사진을 클릭하거나 끌어다 놓으세요</div>
       <div class="upload-sub">JPG, PNG, WEBP 지원 · 최대 10MB</div>
     </div>
-
     <div class="preview-wrap" id="previewWrap">
       <img id="previewImg" src="" alt="명함 미리보기">
       <div class="preview-name" id="previewName"></div>
     </div>
-
-    <button class="btn-ocr" id="ocrBtn" onclick="runOCR()" disabled>
-      🔍 AI로 명함 내용 읽기
-    </button>
-
-    <div class="loading" id="loading">
-      <span class="spinner"></span> Gemini AI가 명함을 분석 중입니다...
-    </div>
+    <button class="btn-ocr" id="ocrBtn" onclick="runOCR()" disabled>🔍 AI로 명함 내용 읽기</button>
+    <div class="loading" id="loading"><span class="spinner"></span> Gemini AI가 명함을 분석 중입니다...</div>
   </div>
 
-  <!-- 결과 입력 카드 -->
   <div class="card result-section" id="resultSection">
     <div class="card-title"><span>✏️</span> 내용 확인 및 수정 후 저장</div>
-
     <div class="form-grid">
-      <div class="form-group">
-        <label>이름 *</label>
-        <input type="text" id="f_name" placeholder="홍길동">
-      </div>
-      <div class="form-group">
-        <label>회사명</label>
-        <input type="text" id="f_company" placeholder="(주)회사명">
-      </div>
-      <div class="form-group">
-        <label>부서</label>
-        <input type="text" id="f_department" placeholder="영업팀">
-      </div>
-      <div class="form-group">
-        <label>직책</label>
-        <input type="text" id="f_position" placeholder="대리">
-      </div>
-      <div class="form-group">
-        <label>전화번호</label>
-        <input type="text" id="f_phone" placeholder="02-1234-5678">
-      </div>
-      <div class="form-group">
-        <label>휴대폰</label>
-        <input type="text" id="f_mobile" placeholder="010-1234-5678">
-      </div>
-      <div class="form-group full">
-        <label>이메일</label>
-        <input type="text" id="f_email" placeholder="hong@company.com">
-      </div>
-      <div class="form-group full">
-        <label>주소</label>
-        <input type="text" id="f_address" placeholder="서울시 ...">
-      </div>
-      <div class="form-group">
-        <label>웹사이트</label>
-        <input type="text" id="f_website" placeholder="www.company.com">
-      </div>
-      <div class="form-group">
-        <label>메모</label>
-        <input type="text" id="f_memo" placeholder="추가 메모 (선택)">
+      <div class="form-group"><label>이름 *</label><input type="text" id="f_name" placeholder="홍길동"></div>
+      <div class="form-group"><label>회사명</label><input type="text" id="f_company" placeholder="(주)회사명"></div>
+      <div class="form-group"><label>부서</label><input type="text" id="f_department" placeholder="영업팀"></div>
+      <div class="form-group"><label>직책</label><input type="text" id="f_position" placeholder="대리"></div>
+      <div class="form-group"><label>전화번호</label><input type="text" id="f_phone" placeholder="02-1234-5678"></div>
+      <div class="form-group"><label>휴대폰</label><input type="text" id="f_mobile" placeholder="010-1234-5678"></div>
+      <div class="form-group full"><label>이메일</label><input type="text" id="f_email" placeholder="hong@company.com"></div>
+      <div class="form-group full"><label>주소</label><input type="text" id="f_address" placeholder="서울시 ..."></div>
+      <div class="form-group full"><label>웹사이트</label><input type="text" id="f_website" placeholder="www.company.com"></div>
+
+      <div class="form-group memo-section">
+        <label>📌 어디서 만난 분인가요? (빠른 선택)</label>
+        <div class="quick-tags" id="quickTags">
+          <span class="quick-tag" onclick="toggleTag(this,'박람회에서 만남')">📍 박람회</span>
+          <span class="quick-tag" onclick="toggleTag(this,'시장조사 중 만남')">🔍 시장조사</span>
+          <span class="quick-tag" onclick="toggleTag(this,'미팅에서 만남')">🤝 미팅</span>
+          <span class="quick-tag" onclick="toggleTag(this,'전화영업')">📞 전화영업</span>
+          <span class="quick-tag" onclick="toggleTag(this,'소개받음')">👥 소개</span>
+        </div>
+        <textarea id="f_memo" placeholder="자유 메모 (예: 홍대 시장조사 中 만남, 디저트 카페 납품에 관심있어함)"></textarea>
       </div>
     </div>
-
     <div class="btn-row" style="margin-top: 18px;">
       <button class="btn-save" onclick="saveCard()">💾 저장하기</button>
       <button class="btn-reset" onclick="resetAll()">↩ 초기화</button>
     </div>
-
     <div class="status-msg" id="statusMsg"></div>
   </div>
 
-  <!-- 저장된 목록 카드 -->
   <div class="card">
     <div class="card-title"><span>📋</span> 저장된 명함 목록</div>
     <div class="table-wrap">
       <table id="cardTable">
         <thead>
-          <tr>
-            <th>이름</th>
-            <th>회사</th>
-            <th>직책</th>
-            <th>휴대폰</th>
-            <th>이메일</th>
-            <th>등록일</th>
-          </tr>
+          <tr><th>이름</th><th>회사</th><th>직책</th><th>휴대폰</th><th>이메일</th><th>메모</th><th>등록일</th><th>연락처 등록</th></tr>
         </thead>
         <tbody id="cardTableBody">
-          <tr class="empty-row"><td colspan="6">저장된 명함이 없습니다</td></tr>
+          <tr class="empty-row"><td colspan="8">저장된 명함이 없습니다</td></tr>
         </tbody>
       </table>
     </div>
   </div>
 </div>
 
+<!-- vCard 선택 팝업 -->
+<div class="modal-overlay" id="vcardModal">
+  <div class="modal-box">
+    <div class="modal-icon">📱</div>
+    <div class="modal-title">연락처에도 저장할까요?</div>
+    <div class="modal-desc">연락처 파일(vCard)을 다운로드합니다.<br>핸드폰에서 파일을 열면 연락처에 바로 추가돼요.</div>
+    <div class="modal-btns">
+      <button class="modal-btn no" onclick="closeVcardModal()">아니요</button>
+      <button class="modal-btn yes" onclick="confirmVcard()">네, 저장</button>
+    </div>
+  </div>
+</div>
+
 <script>
-  // ★ Apps Script 배포 URL
   const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzRf7HW_pUNZCuRiEtrztXUlX8J535Pgt2Jby1mG-UGxS5ghXp5_huTwNF6XQsJESb1/exec';
 
   let selectedFile = null;
   let cardList = JSON.parse(localStorage.getItem('businessCards') || '[]');
+  let lastSavedCard = null;
 
-  // 페이지 로드 시 목록 렌더링
   window.onload = () => renderTable();
 
-  // 드래그앤드롭
   const uploadArea = document.getElementById('uploadArea');
   uploadArea.addEventListener('dragover', e => { e.preventDefault(); uploadArea.classList.add('dragover'); });
   uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('dragover'));
-  uploadArea.addEventListener('drop', e => {
-    e.preventDefault();
-    uploadArea.classList.remove('dragover');
-    const file = e.dataTransfer.files[0];
-    if (file) handleFile(file);
-  });
+  uploadArea.addEventListener('drop', e => { e.preventDefault(); uploadArea.classList.remove('dragover'); const file = e.dataTransfer.files[0]; if (file) handleFile(file); });
 
-  function onFileSelected(e) {
-    const file = e.target.files[0];
-    if (file) handleFile(file);
-  }
+  function onFileSelected(e) { const file = e.target.files[0]; if (file) handleFile(file); }
 
   function handleFile(file) {
-    if (file.size > 10 * 1024 * 1024) {
-      alert('파일 크기가 10MB를 초과합니다.');
-      return;
-    }
+    if (file.size > 10 * 1024 * 1024) { alert('파일 크기가 10MB를 초과합니다.'); return; }
     selectedFile = file;
-
-    // 미리보기
     const reader = new FileReader();
     reader.onload = ev => {
       document.getElementById('previewImg').src = ev.target.result;
@@ -448,45 +197,27 @@
       document.getElementById('previewWrap').style.display = 'block';
     };
     reader.readAsDataURL(file);
-
     document.getElementById('ocrBtn').disabled = false;
     document.getElementById('resultSection').style.display = 'none';
   }
 
   async function runOCR() {
     if (!selectedFile) return;
-
     document.getElementById('ocrBtn').disabled = true;
     document.getElementById('loading').style.display = 'block';
     document.getElementById('resultSection').style.display = 'none';
-
     try {
-      // 파일 → Base64
       const base64 = await fileToBase64(selectedFile);
       const mimeType = selectedFile.type || 'image/jpeg';
-
-      // Apps Script 호출
-      const response = await fetch(APPS_SCRIPT_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain' },
-        body: JSON.stringify({ imageBase64: base64, mimeType: mimeType })
-      });
-
+      const response = await fetch(APPS_SCRIPT_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ imageBase64: base64, mimeType: mimeType }) });
       const result = await response.json();
-
       if (result.success && result.data) {
         fillForm(result.data);
         document.getElementById('resultSection').style.display = 'block';
         document.getElementById('resultSection').scrollIntoView({ behavior: 'smooth' });
-      } else {
-        alert('OCR 실패: ' + (result.error || '알 수 없는 오류'));
-      }
-    } catch (err) {
-      alert('오류 발생: ' + err.message);
-    } finally {
-      document.getElementById('loading').style.display = 'none';
-      document.getElementById('ocrBtn').disabled = false;
-    }
+      } else { alert('OCR 실패: ' + (result.error || '알 수 없는 오류')); }
+    } catch (err) { alert('오류 발생: ' + err.message); }
+    finally { document.getElementById('loading').style.display = 'none'; document.getElementById('ocrBtn').disabled = false; }
   }
 
   function fileToBase64(file) {
@@ -509,12 +240,24 @@
     document.getElementById('f_address').value = data.address || '';
     document.getElementById('f_website').value = data.website || '';
     document.getElementById('f_memo').value = '';
+    document.querySelectorAll('.quick-tag').forEach(t => t.classList.remove('active'));
+  }
+
+  // 빠른 메모 태그 토글
+  function toggleTag(el, text) {
+    el.classList.toggle('active');
+    const memo = document.getElementById('f_memo');
+    let cur = memo.value.trim();
+    if (el.classList.contains('active')) {
+      memo.value = cur ? cur + ', ' + text : text;
+    } else {
+      memo.value = cur.replace(new RegExp(text + '(, )?'), '').replace(/, $/, '').trim();
+    }
   }
 
   function saveCard() {
     const name = document.getElementById('f_name').value.trim();
     if (!name) { alert('이름을 입력해주세요.'); return; }
-
     const card = {
       name,
       company: document.getElementById('f_company').value,
@@ -529,18 +272,56 @@
       savedAt: new Date().toLocaleString('ko-KR')
     };
 
-    // 로컬 저장 (사이트 목록용)
+    // 시트에 저장 (메모 포함)
+    fetch(APPS_SCRIPT_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ action: 'saveCard', card: card }) }).catch(()=>{});
+
     cardList.unshift(card);
     localStorage.setItem('businessCards', JSON.stringify(cardList));
     renderTable();
 
-    // 상태 메시지
     const msg = document.getElementById('statusMsg');
     msg.className = 'status-msg success';
-    msg.textContent = '✅ 저장 완료! Google Sheets에도 자동 기록됩니다.';
+    msg.textContent = '✅ 저장 완료! Google Sheets에도 기록됩니다.';
     msg.style.display = 'block';
-
     setTimeout(() => { msg.style.display = 'none'; }, 3000);
+
+    // vCard 선택 팝업 띄우기
+    lastSavedCard = card;
+    document.getElementById('vcardModal').classList.add('show');
+  }
+
+  // ── vCard 팝업 ──
+  function confirmVcard() { downloadVcard(lastSavedCard); closeVcardModal(); }
+  function closeVcardModal() { document.getElementById('vcardModal').classList.remove('show'); resetAll(); }
+
+  // ── vCard 생성/다운로드 ──
+  function downloadVcard(c) {
+    if (!c) return;
+    const fullName = c.name || '';
+    const tel = c.mobile || c.phone || '';
+    const org = c.company + (c.department ? ';' + c.department : '');
+    let vcf = 'BEGIN:VCARD\nVERSION:3.0\n';
+    vcf += 'FN:' + fullName + '\n';
+    vcf += 'N:' + fullName + ';;;;\n';
+    if (org.trim() && org.trim() !== ';') vcf += 'ORG:' + org + '\n';
+    if (c.position) vcf += 'TITLE:' + c.position + '\n';
+    if (c.mobile) vcf += 'TEL;TYPE=CELL:' + c.mobile + '\n';
+    if (c.phone) vcf += 'TEL;TYPE=WORK:' + c.phone + '\n';
+    if (c.email) vcf += 'EMAIL:' + c.email + '\n';
+    if (c.address) vcf += 'ADR;TYPE=WORK:;;' + c.address + ';;;;\n';
+    if (c.website) vcf += 'URL:' + c.website + '\n';
+    if (c.memo) vcf += 'NOTE:' + c.memo + '\n';
+    vcf += 'END:VCARD';
+
+    const blob = new Blob([vcf], { type: 'text/vcard;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = (fullName || 'contact') + '.vcf';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   }
 
   function resetAll() {
@@ -550,13 +331,14 @@
     document.getElementById('resultSection').style.display = 'none';
     document.getElementById('ocrBtn').disabled = true;
     document.getElementById('statusMsg').style.display = 'none';
+    document.querySelectorAll('.quick-tag').forEach(t => t.classList.remove('active'));
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   function renderTable() {
     const tbody = document.getElementById('cardTableBody');
     if (cardList.length === 0) {
-      tbody.innerHTML = '<tr class="empty-row"><td colspan="6">저장된 명함이 없습니다</td></tr>';
+      tbody.innerHTML = '<tr class="empty-row"><td colspan="8">저장된 명함이 없습니다</td></tr>';
       return;
     }
     tbody.innerHTML = cardList.map((c, i) => `
@@ -566,7 +348,9 @@
         <td>${c.position || '-'}</td>
         <td>${c.mobile || c.phone || '-'}</td>
         <td>${c.email || '-'}</td>
+        <td class="memo-cell">${c.memo || '-'}</td>
         <td>${c.savedAt}</td>
+        <td><button class="btn-vcard-sm" onclick='downloadVcard(${JSON.stringify(c).replace(/'/g, "&#39;")})'>📱 연락처 등록</button></td>
       </tr>
     `).join('');
   }
