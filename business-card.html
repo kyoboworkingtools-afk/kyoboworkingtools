@@ -306,8 +306,11 @@
     vcf += 'N:' + fullName + ';;;;\n';
     if (org.trim() && org.trim() !== ';') vcf += 'ORG:' + org + '\n';
     if (c.position) vcf += 'TITLE:' + c.position + '\n';
-    if (c.mobile) vcf += 'TEL;TYPE=CELL:' + c.mobile + '\n';
-    if (c.phone) vcf += 'TEL;TYPE=WORK:' + c.phone + '\n';
+    if (c.mobile) {
+      vcf += 'TEL;TYPE=CELL:' + c.mobile + '\n';
+    } else if (c.phone) {
+      vcf += 'TEL;TYPE=WORK:' + c.phone + '\n';
+    }
     if (c.email) vcf += 'EMAIL:' + c.email + '\n';
     if (c.address) vcf += 'ADR;TYPE=WORK:;;' + c.address + ';;;;\n';
     if (c.website) vcf += 'URL:' + c.website + '\n';
