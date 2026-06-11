@@ -1,27 +1,25 @@
 export const config = { runtime: 'edge' };
 
 export default async function handler(req) {
-  const clientId = process.env.NAVER_CLIENT_ID;
-  const clientSecret = process.env.NAVER_CLIENT_SECRET;
+  if (req.method === 'OPTIONS') {
+    return new Response(null, {
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type',
+      },
+    });
+  }
 
-  const body = await req.json();
+  if (req.method !== 'POST') {
+    return new Response(JSON.stringify({ error: 'Method not allowed' }), {
+      status: 405,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
 
-  const response = await fetch('https://openapi.naver.com/v1/datalab/search', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-Naver-Client-Id': clientId,
-      'X-Naver-Client-Secret': clientSecret,
-    },
-    body: JSON.stringify(body),
-  });
-
-  const data = await response.json();
-
-  return new Response(JSON.stringify(data), {
-    headers: {
-      'Content-Type': 'application/json',
-      'Access-Control-Allow-Origin': '*',
-    },
-  });
-}
+  try {
+    const clientId = process.env.NAVER_CLIENT_ID;
+    const clientSecret = process.env.NAVER_CLIENT_SECRET;
+    const body = await req.json();
+    const response = await fetch('https://openapi.naver.com/v1/datalab/search', {
