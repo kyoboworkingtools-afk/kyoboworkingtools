@@ -1492,10 +1492,27 @@ function openTool(id){
 }
 function closeViewer(){document.getElementById('toolViewer').classList.remove('open');document.getElementById('tvIframe').src='';}
 
+function renderTasksPage(){
+  const main = document.getElementById('main-content');
+  main.innerHTML = '';
+  fetch('tasks.html')
+    .then(r => r.text())
+    .then(html => {
+      main.innerHTML = html;
+      const scripts = main.querySelectorAll('script');
+      scripts.forEach(s => {
+        const ns = document.createElement('script');
+        ns.textContent = s.textContent;
+        document.body.appendChild(ns);
+      });
+    });
+}
+  
 function selectNav(key,el){
   currentNav=key;document.querySelectorAll('.nav-item,.nav-sub-item').forEach(n=>n.classList.remove('active'));el.classList.add('active');
   if(key==='dash-inv')renderDashInv();
   else if(key==='dash-cal')renderDashCal();
+  else if(key==='업무현황')renderTasksPage();
   else if(key==='music'||key==='music-tools')renderToolPage('music');
   else if(key==='music-cal')renderMusicCal();
   else if(key==='munge'||key==='munge-tools')renderToolPage('munge');
