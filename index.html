@@ -388,7 +388,8 @@ const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJ
 const _supa=supabase.createClient(SUPA_URL,SUPA_KEY);
 let _currentUser=null,_currentProfile=null;
 const MENU_LIST=[
-  {key:'팀스케줄',label:'팀 스케줄'},
+  {key:'팀스케줄',label:'일정현황'},
+  {key:'업무현황', label:'업무현황'},
   {key:'음반_재고현황',label:'음반 · 재고현황'},
   {key:'음반_업무도구',label:'음반 · 업무도구'},
   {key:'문구_업무도구',label:'문구 · 업무도구'},
