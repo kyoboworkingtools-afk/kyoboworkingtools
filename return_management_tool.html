@@ -1,0 +1,1182 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>음반반품관리도구 - 3단계</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color: #333; margin: 0; padding: 20px; background: #f5f5f5;">
+
+<div style="max-width: 1400px; margin: 0 auto;">
+  <!-- 탭 -->
+  <div style="display: flex; gap: 0; border-bottom: 3px solid #ddd; margin-bottom: 30px; overflow-x: auto; background: white; padding: 0; min-height: 48px; align-items: center; position: relative; z-index: 100;">
+    <button onclick="switchTab(1)" id="tab-btn-1" style="padding: 12px 20px; background: #f0f0f0; border: none; font-size: 14px; font-weight: 600; cursor: pointer; color: #333; border-bottom: 3px solid #333; white-space: nowrap;">1단계: 데이터 업로드</button>
+    <button onclick="switchTab(2)" id="tab-btn-2" style="padding: 12px 20px; background: transparent; border: none; font-size: 14px; font-weight: 500; cursor: pointer; color: #999; border-bottom: none; white-space: nowrap;">2단계: 반품한도액 계산</button>
+    <button onclick="switchTab(3)" id="tab-btn-3" style="padding: 12px 20px; background: transparent; border: none; font-size: 14px; font-weight: 500; cursor: pointer; color: #999; border-bottom: none; white-space: nowrap;">3단계: 반품진행률 현황</button>
+    <button onclick="switchTab(4)" id="tab-btn-4" style="padding: 12px 20px; background: transparent; border: none; font-size: 14px; font-weight: 500; cursor: pointer; color: #999; border-bottom: none; white-space: nowrap;">4단계: 월별 반품진행</button>
+  </div>
+
+  <!-- TAB 1 -->
+  <div id="tab-1" style="display: block;">
+    <div style="background: white; padding: 20px; border-radius: 8px; border: 1px solid #ddd;">
+      <h3 style="margin: 0 0 20px 0; font-size: 16px; font-weight: 600;">1단계: 월별 매입&amp;반품 분석</h3>
+      <div style="margin-bottom: 15px;">
+        <input id="file-input" type="file" accept=".xlsx,.xls" style="padding: 10px; border: 1px solid #ddd; border-radius: 4px; width: 100%; box-sizing: border-box;">
+      </div>
+      <button onclick="loadFile()" style="width: 100%; padding: 12px; background: #0066cc; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 500; font-size: 14px;">파일 업로드</button>
+    </div>
+    <div id="step1-status" style="display: none; margin-top: 15px; padding: 15px; background: #e6f3ff; border-radius: 4px; border: 1px solid #99ccff; color: #0066cc; font-size: 13px;">
+      ✓ 파일 로드 완료 (<span id="vendor-count">0</span>개 거래처)
+    </div>
+  </div>
+
+  <!-- TAB 2 -->
+  <div id="tab-2" style="display: none;">
+    <div style="background: white; padding: 20px; border-radius: 8px; border: 1px solid #ddd; margin-bottom: 20px;">
+      <h3 style="margin: 0 0 15px 0; font-size: 14px; font-weight: 600;">2단계: 수기거래처 반품데이터 업로드</h3>
+      <p style="margin: 0 0 15px 0; font-size: 12px; color: #666;">수기거래처(11개) 월별 반품한도액과 반품금액을 엑셀로 업로드해주세요. (원 단위)</p>
+      
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+        <!-- 파일 업로드 -->
+        <div>
+          <label style="display: block; margin-bottom: 6px; font-size: 12px; font-weight: 500;">수기거래처 엑셀 파일</label>
+          <input type="file" id="manual-vendor-file" accept=".xlsx,.xls" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 12px; box-sizing: border-box;">
+        </div>
+        
+        <!-- 업로드 버튼 -->
+        <div>
+          <label style="display: block; margin-bottom: 6px; font-size: 12px; font-weight: 500;">&nbsp;</label>
+          <button onclick="uploadManualVendorFile()" style="width: 100%; padding: 8px; background: #00aa66; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 500; font-size: 12px;">📤 업로드</button>
+        </div>
+      </div>
+      
+      <!-- 업로드 상태 -->
+      <div id="manual-upload-status" style="padding: 12px; background: #f0f7ff; border: 1px solid #0066cc; border-radius: 4px; font-size: 12px; color: #0066cc; display: none;"></div>
+    </div>
+
+    <!-- 2단계 네비게이션 버튼 -->
+    <div style="margin-top: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+      <button onclick="switchTab(1)" style="padding: 12px 20px; background: #999; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 500;">← 1단계로</button>
+      <button onclick="switchTab(3)" style="padding: 12px 20px; background: #009900; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 500;">3단계로 진행 →</button>
+    </div>
+  </div>
+
+  <!-- TAB 3: 반품진행률 현황 -->
+  <div id="tab-3" style="display: none;">
+    <div style="background: white; padding: 20px; border-radius: 8px; border: 1px solid #ddd; margin-bottom: 20px;">
+      <h3 style="margin: 0 0 20px 0; font-size: 16px; font-weight: 600;">3단계: 반품진행률 현황</h3>
+      
+      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+        <!-- 기준년월 -->
+        <div>
+          <label style="display: block; margin-bottom: 6px; font-size: 12px; font-weight: 500;">기준년월</label>
+          <select id="step3-month" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px; box-sizing: border-box;">
+            <option value="">선택하세요</option>
+          </select>
+        </div>
+
+        <!-- 반품불가업체 관리 -->
+        <div>
+          <label style="display: block; margin-bottom: 6px; font-size: 12px; font-weight: 500;">반품불가업체 관리</label>
+          <button onclick="toggleUnavailableList()" style="width: 100%; padding: 8px 12px; background: #e65100; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">추가/제거 (<span id="unavailable-count">0</span>)</button>
+        </div>
+
+        <!-- 엑셀 다운로드 -->
+        <div>
+          <label style="display: block; margin-bottom: 6px; font-size: 12px; font-weight: 500;">&nbsp;</label>
+          <button onclick="downloadStep3Excel()" style="width: 100%; padding: 8px; background: #0066cc; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 500; font-size: 12px;">📥 엑셀 다운로드</button>
+        </div>
+      </div>
+
+      <button onclick="displayStep3()" style="width: 100%; padding: 12px; background: #0066cc; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 500; font-size: 14px; margin-bottom: 20px;">조회</button>
+
+      <!-- 반품불가업체 리스트 (숨김) -->
+      <div id="unavailable-list" style="display: none; background: #fff3e0; padding: 15px; border-radius: 8px; border: 1px solid #ffe0b2; margin-bottom: 20px;">
+        <div id="unavailable-vendors-container"></div>
+      </div>
+
+      <!-- 대시보드 -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;">
+        <div style="padding: 15px; background: #f9f9f9; border-radius: 6px; border: 1px solid #ddd; text-align: center;">
+          <p style="margin: 0 0 8px 0; font-size: 12px; color: #666;">반품한도액 합계</p>
+          <p style="margin: 0; font-size: 20px; font-weight: 600;" id="step3-total-limit">0</p>
+        </div>
+        <div style="padding: 15px; background: #f9f9f9; border-radius: 6px; border: 1px solid #ddd; text-align: center;">
+          <p style="margin: 0 0 8px 0; font-size: 12px; color: #666;">실제반품금액 합계</p>
+          <p style="margin: 0; font-size: 20px; font-weight: 600;" id="step3-total-return">0</p>
+        </div>
+        <div style="padding: 15px; background: #f9f9f9; border-radius: 6px; border: 1px solid #ddd; text-align: center;">
+          <p style="margin: 0 0 8px 0; font-size: 12px; color: #666;">전체 반품진행률</p>
+          <p style="margin: 0; font-size: 20px; font-weight: 600;" id="step3-total-rate">0%</p>
+        </div>
+      </div>
+
+      <!-- 요약 통계 -->
+      <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 20px;">
+        <div style="padding: 12px; background: white; border-radius: 6px; border: 1px solid #ddd; text-align: center; cursor: pointer;" onclick="filterByRisk('all')">
+          <p style="margin: 0 0 5px 0; font-size: 11px; color: #666;">진행거래처</p>
+          <p style="margin: 0; font-size: 18px; font-weight: 600; color: #0066cc;" id="stat-total">0</p>
+        </div>
+        <div style="padding: 12px; background: white; border-radius: 6px; border: 1px solid #ddd; text-align: center; cursor: pointer;" onclick="filterByRisk('normal')">
+          <p style="margin: 0 0 5px 0; font-size: 11px; color: #666;">🟢 정상 (≥75%)</p>
+          <p style="margin: 0; font-size: 18px; font-weight: 600; color: #2e7d32;" id="stat-normal">0</p>
+        </div>
+        <div style="padding: 12px; background: white; border-radius: 6px; border: 1px solid #ddd; text-align: center; cursor: pointer;" onclick="filterByRisk('watch')">
+          <p style="margin: 0 0 5px 0; font-size: 11px; color: #666;">🟡 관심 (50-75%)</p>
+          <p style="margin: 0; font-size: 18px; font-weight: 600; color: #f57f17;" id="stat-watch">0</p>
+        </div>
+        <div style="padding: 12px; background: white; border-radius: 6px; border: 1px solid #ddd; text-align: center; cursor: pointer;" onclick="filterByRisk('caution')">
+          <p style="margin: 0 0 5px 0; font-size: 11px; color: #666;">🟠 주의 (25-50%)</p>
+          <p style="margin: 0; font-size: 18px; font-weight: 600; color: #e65100;" id="stat-caution">0</p>
+        </div>
+        <div style="padding: 12px; background: white; border-radius: 6px; border: 1px solid #ddd; text-align: center; cursor: pointer;" onclick="filterByRisk('risk')">
+          <p style="margin: 0 0 5px 0; font-size: 11px; color: #666;">🔴 위험 (<25%)</p>
+          <p style="margin: 0; font-size: 18px; font-weight: 600; color: #c62828;" id="stat-risk">0</p>
+        </div>
+      </div>
+
+      <!-- 추가 통계 -->
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px;">
+        <div style="padding: 12px; background: white; border-radius: 6px; border: 1px solid #ddd; text-align: center;">
+          <p style="margin: 0 0 5px 0; font-size: 12px; color: #666;">최고 진행률</p>
+          <p style="margin: 0; font-size: 14px; font-weight: 600; color: #388e3c;" id="stat-max-rate">0% (-)</p>
+        </div>
+        <div style="padding: 12px; background: white; border-radius: 6px; border: 1px solid #ddd; text-align: center;">
+          <p style="margin: 0 0 5px 0; font-size: 12px; color: #666;">최저 진행률</p>
+          <p style="margin: 0; font-size: 14px; font-weight: 600; color: #d32f2f;" id="stat-min-rate">0% (-)</p>
+        </div>
+        <div style="padding: 12px; background: white; border-radius: 6px; border: 1px solid #ddd; text-align: center;">
+          <p style="margin: 0 0 5px 0; font-size: 12px; color: #666;">반품 미실행</p>
+          <p style="margin: 0; font-size: 14px; font-weight: 600; color: #e65100;" id="stat-no-return">0개</p>
+        </div>
+      </div>
+
+      <!-- 테이블 -->
+      <div style="background: white; border-radius: 8px; border: 1px solid #ddd; overflow-x: auto; max-height: 600px; overflow-y: auto;">
+        <table style="width: 100%; font-size: 12px; border-collapse: collapse;">
+          <thead style="background: #f9f9f9; border-bottom: 1px solid #ddd; position: sticky; top: 0; z-index: 10;">
+            <tr>
+              <th ondblclick="sortTable('vendor')" style="padding: 10px; text-align: left; font-weight: 600; cursor: pointer; user-select: none;">거래처명</th>
+              <th ondblclick="sortTable('limit')" style="padding: 10px; text-align: right; font-weight: 600; cursor: pointer; user-select: none;">반품한도금액</th>
+              <th ondblclick="sortTable('return')" style="padding: 10px; text-align: right; font-weight: 600; cursor: pointer; user-select: none;">실제반품금액</th>
+              <th ondblclick="sortTable('remaining')" style="padding: 10px; text-align: right; font-weight: 600; cursor: pointer; user-select: none;">잔여한도금액</th>
+              <th ondblclick="sortTable('rate')" style="padding: 10px; text-align: right; font-weight: 600; cursor: pointer; user-select: none;">반품진행률(%)</th>
+              <th style="padding: 10px; text-align: center; font-weight: 600;">위험도</th>
+              <th style="padding: 10px; text-align: center; font-weight: 600;">정기반품</th>
+              <th style="padding: 10px; text-align: center; font-weight: 600;">추가반품</th>
+              <th style="padding: 10px; text-align: center; font-weight: 600;">비고</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-step3"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div style="margin-top: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+      <button onclick="switchTab(2)" style="padding: 12px 20px; background: #999; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 500;">← 2단계로</button>
+      <button onclick="switchTab(4)" style="padding: 12px 20px; background: #009900; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 500;">4단계로 진행 →</button>
+    </div>
+  </div>
+
+  <!-- TAB 4: 월별 반품진행 현황 -->
+  <div id="tab-4" style="display: none;">
+    <div style="background: white; padding: 20px; border-radius: 8px; border: 1px solid #ddd; margin-bottom: 20px;">
+      <h3 style="margin: 0 0 20px 0; font-size: 16px; font-weight: 600;">4단계: 월별 반품진행 현황</h3>
+      
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px;">
+        <button onclick="displayStep4()" style="padding: 12px; background: #0066cc; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 500; font-size: 14px;">조회</button>
+        <button onclick="downloadStep4PDF()" style="padding: 12px; background: #00aa66; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 500; font-size: 14px;">📥 PDF 다운로드</button>
+      </div>
+
+      <!-- 월별 현황 -->
+      <div id="step4-content" style="display: none;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px;">
+          <!-- 진행도 바 -->
+          <div style="display: flex; flex-direction: column; height: 480px;">
+            <p style="font-size: 12px; color: #666; margin: 0 0 12px 0; font-weight: 500; height: 16px;">월별 진행도</p>
+            <div id="step4-bars" style="flex: 1; display: flex; flex-direction: column; justify-content: space-around; overflow: hidden;"></div>
+          </div>
+
+          <!-- 상세 표 -->
+          <div style="display: flex; flex-direction: column; height: 480px;">
+            <p style="font-size: 12px; color: #666; margin: 0 0 12px 0; font-weight: 500; height: 16px;">월별 상세 <span style="font-size: 11px; color: #999;">(단위:원)</span></p>
+            <div id="step4-table-container" style="flex: 1; overflow-y: auto; border: 1px solid #ddd; border-radius: 4px;">
+              <table id="step4-table" style="width: 100%; font-size: 12px; border-collapse: collapse;">
+              </table>
+            </div>
+          </div>
+
+          <!-- 핵심 지표 (우측) -->
+          <div style="display: flex; flex-direction: column; height: 480px;">
+            <p style="font-size: 12px; color: #666; margin: 0 0 12px 0; font-weight: 500; height: 16px;">핵심 지표</p>
+            <div style="flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; overflow: hidden;">
+              <!-- 최고 진행률 (좌상) -->
+              <div style="padding: 12px; background: #f9f9f9; border-radius: 6px; border: 1px solid #ddd; text-align: center; display: flex; flex-direction: column; justify-content: center; gap: 4px;">
+                <p style="margin: 0; font-size: 12px; color: #666; font-weight: 600;">최고 진행률</p>
+                <p style="margin: 0; font-size: 22px; font-weight: 700; color: #388e3c;" id="stat-max-rate-val">-</p>
+                <p style="margin: 0; font-size: 11px; color: #999;" id="stat-max-month">-</p>
+              </div>
+              <!-- 누계 진행률 (우상) -->
+              <div style="padding: 12px; background: #f9f9f9; border-radius: 6px; border: 1px solid #ddd; text-align: center; display: flex; flex-direction: column; justify-content: center; gap: 4px;">
+                <p style="margin: 0; font-size: 12px; color: #666; font-weight: 600;">누계 진행률</p>
+                <p style="margin: 0; font-size: 22px; font-weight: 700; color: #0066cc;" id="stat-cumulative-rate-top">-</p>
+              </div>
+              <!-- 최저 진행률 (좌하) -->
+              <div style="padding: 12px; background: #f9f9f9; border-radius: 6px; border: 1px solid #ddd; text-align: center; display: flex; flex-direction: column; justify-content: center; gap: 4px;">
+                <p style="margin: 0; font-size: 12px; color: #666; font-weight: 600;">최저 진행률</p>
+                <p style="margin: 0; font-size: 22px; font-weight: 700; color: #d32f2f;" id="stat-min-rate-val">-</p>
+                <p style="margin: 0; font-size: 11px; color: #999;" id="stat-min-month">-</p>
+              </div>
+              <!-- 누적 성과 (우하) -->
+              <div style="padding: 12px; background: #f0f7ff; border-radius: 6px; border: 2px solid #0066cc; text-align: center; display: flex; flex-direction: column; justify-content: center; gap: 4px;">
+                <p style="margin: 0; font-size: 12px; color: #666; font-weight: 600;">누계 진행률</p>
+                <p style="margin: 0; font-size: 22px; font-weight: 700; color: #0066cc;" id="stat-cumulative-rate">-</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top: 20px;">
+      <button onclick="switchTab(3)" style="padding: 12px 20px; background: #999; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 500;">← 3단계로</button>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<script>
+  // ===== 3단계 엑셀 다운로드 =====
+  function downloadStep3Excel() {
+    const tbody = document.getElementById('tbody-step3');
+    if (tbody.rows.length === 0) {
+      alert('조회된 데이터가 없습니다.');
+      return;
+    }
+
+    const data = [];
+    data.push(['거래처명', '반품한도금액', '실제반품금액', '잔여한도금액', '반품진행률(%)', '위험도', '정기반품', '추가반품', '비고']);
+    
+    // tbody의 모든 행을 순회
+    Array.from(tbody.rows).forEach(row => {
+      const cells = row.cells;
+      const vendor = cells[0]?.textContent || '';
+      const limit = cells[1]?.textContent || '';
+      const returnAmount = cells[2]?.textContent || '';
+      const remaining = cells[3]?.textContent || '';
+      const rate = cells[4]?.textContent || '';
+      const risk = cells[5]?.textContent || '';
+      
+      // 체크박스 값 추출
+      const checkboxes = row.querySelectorAll('input[type="checkbox"]');
+      const periodic = checkboxes[0]?.checked ? '○' : '';
+      const additional = checkboxes[1]?.checked ? '○' : '';
+      
+      // 비고 값 추출 (드롭다운 또는 input)
+      const selectEl = row.querySelector('select');
+      const inputEl = row.querySelector('input[type="text"].remark-input');
+      const remark = inputEl?.value || selectEl?.value || '';
+      
+      data.push([
+        vendor,
+        limit,
+        returnAmount,
+        remaining,
+        rate,
+        risk,
+        periodic,
+        additional,
+        remark
+      ]);
+    });
+
+    const ws = XLSX.utils.aoa_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, '반품진행률');
+    XLSX.writeFile(wb, '반품진행률현황_' + new Date().getTime() + '.xlsx');
+  }
+
+  // ===== 4단계 함수 =====
+  let globalStep4Data = []; // 4단계 데이터 저장용
+
+  function displayStep4() {
+    // ===== 실제 업로드 데이터를 기반으로 step4Data 동적 생성 =====
+    let step4Data = [];
+    
+    if (allData.length > 0 && referenceMonths.length > 0) {
+      // 25년 12월(첫 번째 달)은 제외하고 26년 1월부터만 표시
+      const startIdx = Math.min(1, referenceMonths.length - 1); // 인덱스 1부터 시작
+      
+      // 월별로 purchase와 return 합계 계산
+      for (let idx = startIdx; idx < referenceMonths.length; idx++) {
+        let totalPurchase = 0;
+        let totalReturn = 0;
+        
+        // 1. 자동데이터 (allData에서 수기거래처와 반품불가 제외)
+        for (let vendor of allData) {
+          if (MANUAL_VENDORS.includes(vendor.name) || vendor.name.includes('합계') || unavailableVendors.includes(vendor.name)) {
+            continue;
+          }
+          
+          const prevIdx = idx > 0 ? idx - 1 : 0;
+          const prevPurchase = vendor[prevIdx]?.purchase || 0;
+          const prevReturn = vendor[prevIdx]?.return || 0;
+          const rate = RATE_DATA[vendor.name] || 0.10;
+          
+          // 특별 계산 규칙: (입하원가 - 입하반품원가) × 반품한도율
+          let limit = 0;
+          if (SPECIAL_DEDUCT_VENDORS.includes(vendor.name)) {
+            limit = (prevPurchase - prevReturn) * rate;
+          } else {
+            limit = prevPurchase * rate;
+          }
+          
+          const returnAmount = vendor[idx]?.return || 0;
+          totalPurchase += limit;
+          totalReturn += returnAmount;
+        }
+        
+        // 2. 수기거래처 데이터 추가 (업로드된 데이터 사용)
+        // referenceMonths[idx]를 YY.MM 형식으로 변환 (예: "26년1월" → "26.01")
+        const monthStr = referenceMonths[idx];
+        const monthMatch = monthStr.match(/(\d+)년\s*(\d+)월/);
+    const yearMonth = monthMatch ? `${String(monthMatch[1]).slice(-2)}.${monthMatch[2].padStart(2, '0')}` : '';
+        
+        for (let vendor of MANUAL_VENDORS) {
+          if (unavailableVendors.includes(vendor)) {
+            continue;
+          }
+          
+          // manualVendorData에서 데이터 조회 (원 단위 그대로)
+          if (manualVendorData[vendor] && manualVendorData[vendor][yearMonth]) {
+            const data = manualVendorData[vendor][yearMonth];
+            totalPurchase += data.limit;
+            totalReturn += data.return;
+          }
+        }
+        
+        // 진행률 계산
+        const rate = totalPurchase > 0 ? (totalReturn / totalPurchase * 100).toFixed(1) : 0;
+        
+        step4Data.push({
+          month: referenceMonths[idx],
+          limit: Math.round(totalPurchase),
+          actual: Math.round(totalReturn),
+          rate: parseFloat(rate)
+        });
+      }
+    } else {
+      // 데이터가 없으면 기본값 (자리 유지용)
+      step4Data = [
+        { month: '-', limit: 0, actual: 0, rate: 0 }
+      ];
+    }
+    
+    // 전역 변수에 저장
+    globalStep4Data = step4Data;
+    
+    // 진행도 바
+    const barsHtml = step4Data.map(d => `
+      <div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+          <span style="font-size: 12px; font-weight: 500;">${d.month}</span>
+          <span style="font-size: 11px; color: #666;">${d.rate}%</span>
+        </div>
+        <div style="width: 100%; height: 20px; background: #f0f0f0; border-radius: 3px; overflow: hidden;">
+          <div style="width: ${d.rate}%; height: 100%; background: #4a4a4a;"></div>
+        </div>
+      </div>
+    `).join('');
+    
+    document.getElementById('step4-bars').innerHTML = barsHtml;
+
+    // 표
+    const tableHtml = `
+      <thead>
+        <tr style="border-bottom: 1px solid var(--color-border-secondary);">
+          <th style="padding: 8px 6px; text-align: left; font-weight: 500; font-size: 11px;">월</th>
+          <th style="padding: 8px 6px; text-align: right; font-weight: 500; font-size: 11px;">한도액(원)</th>
+          <th style="padding: 8px 6px; text-align: right; font-weight: 500; font-size: 11px;">실제반품(원)</th>
+          <th style="padding: 8px 6px; text-align: right; font-weight: 500; font-size: 11px;">진행률</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${step4Data.map((d, i) => `
+          <tr style="border-bottom: 0.5px solid var(--color-border-tertiary); background: ${i % 2 === 0 ? 'var(--color-background-secondary)' : 'transparent'};">
+            <td style="padding: 8px 6px;">${d.month}</td>
+            <td style="padding: 8px 6px; text-align: right; font-size: 11px;">${Math.round(d.limit).toLocaleString()}</td>
+            <td style="padding: 8px 6px; text-align: right; font-size: 11px;">${Math.round(d.actual).toLocaleString()}</td>
+            <td style="padding: 8px 6px; text-align: right; font-weight: 500; color: ${d.rate >= 80 ? '#00aa66' : d.rate >= 70 ? '#0066cc' : '#ff9900'};">${d.rate}%</td>
+          </tr>
+        `).join('')}
+        <tr style="border-top: 1px solid var(--color-border-secondary); background: #f5f5f5;">
+          <td style="padding: 8px 6px; font-weight: 600;">누계</td>
+          <td style="padding: 8px 6px; text-align: right; font-size: 11px; font-weight: 600;">${Math.round(step4Data.reduce((s, d) => s + d.limit, 0)).toLocaleString()}</td>
+          <td style="padding: 8px 6px; text-align: right; font-size: 11px; font-weight: 600;">${Math.round(step4Data.reduce((s, d) => s + d.actual, 0)).toLocaleString()}</td>
+          <td style="padding: 8px 6px; text-align: right; font-weight: 600; color: #0066cc;">${(() => { const tl = step4Data.reduce((s,d)=>s+d.limit,0); const ta = step4Data.reduce((s,d)=>s+d.actual,0); return tl > 0 ? (ta/tl*100).toFixed(1)+'%' : '0%'; })()}</td>
+        </tr>
+      </tbody>
+    `;
+    
+    document.getElementById('step4-table').innerHTML = tableHtml;
+
+    // 통계
+    const maxRate = Math.max(...step4Data.map(d => d.rate));
+    const minRate = Math.min(...step4Data.map(d => d.rate));
+    const maxMonth = step4Data.find(d => d.rate === maxRate).month;
+    const minMonth = step4Data.find(d => d.rate === minRate).month;
+    const totalLimit = step4Data.reduce((sum, d) => sum + d.limit, 0);
+    const totalActual = step4Data.reduce((sum, d) => sum + d.actual, 0);
+    const cumulativeRate = (totalActual / totalLimit * 100).toFixed(1);
+
+    document.getElementById('stat-cumulative-rate-top').textContent = cumulativeRate + '%';
+    document.getElementById('stat-max-rate-val').textContent = maxRate + '%';
+    document.getElementById('stat-max-month').textContent = maxMonth;
+    document.getElementById('stat-min-rate-val').textContent = minRate + '%';
+    document.getElementById('stat-min-month').textContent = minMonth;
+    document.getElementById('stat-cumulative-rate').textContent = cumulativeRate + '%';
+
+    document.getElementById('step4-content').style.display = 'block';
+  }
+
+  // ===== 4단계 PDF 다운로드 =====
+  function downloadStep4PDF() {
+    const element = document.getElementById('step4-content');
+    const opt = {
+      margin: 10,
+      filename: '4단계_월별반품진행현황_' + new Date().getTime() + '.pdf',
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true },
+      jsPDF: { orientation: 'landscape', unit: 'mm', format: 'a4' }
+    };
+    html2pdf().set(opt).from(element).save();
+  }
+
+  // ===== 전역 변수 =====
+  // 특별 계산 규칙: (입하원가 - 입하반품원가) × 반품한도율
+  const SPECIAL_DEDUCT_VENDORS = ['강앤뮤직', '해리슨앤컴퍼니', '미디어신나라'];
+
+  // 정렬 상태
+  let sortState = {
+    column: 'rate',
+    order: 'desc'
+  };
+
+  let step3Results = []; // 전역 변수 (필터링에 사용)
+  let unavailableVendors = [
+    '912엔터테인먼트',
+    '굿타임미디어',
+    '더 볼트',
+    '디테일즈',
+    '다모아엔터테인먼트(폐업)',
+    '리플레이뮤직',
+    '미덱스컴퍼니',
+    '뮤직팩토리코리아',
+    '무선지',
+    '블루보이',
+    '비디오여행(폐업)',
+    '에버라인',
+    '에이스미디어(거래종료)',
+    '에이치앤엘 웍스',
+    '에스엠엔터테인먼트',
+    '에스엠엔터테인먼트(면세)',
+    '에이앤지모즈',
+    '에프에프컴퍼니',
+    '오이일이뮤직',
+    '오디오가이',
+    '엠피엠지',
+    '지마루컴퍼니',
+    '코팬글로벌',
+    '케이티지니뮤직(지니-엠투엠)',
+    '티미디어',
+    '플레인아카이브',
+    '와이지플러스(KOZ엔터-키트)',
+    '와이지플러스(빅히트뮤직-키트)',
+    '와이지플러스(플레디스-키트)',
+    '와이지플러스(플레디스-키트)/사용불가'
+  ]; // 반품불가업체 리스트
+
+  const RATE_DATA = {
+    'EBS미디어센터': 0.35, '강앤뮤직': 0.05, '굿인터내셔널': 0.10, '나무': 0.35, '내츄럴리뮤직씨앤씨': 0.35, 
+    '네모즈랩': 0.10, '노바미디어': 0.35, '놀유니버스': 0.10, '다날(뮤직앤뉴)': 0.10, '대영에이브이(주)': 0.35, 
+    '드림어스컴퍼니': 0.10, '라온아이(주)': 0.05, '루커스이앤이': 0.20, '마루컨텐츠': 0.35, '마운드미디어': 0.10, 
+    '뮤직버디': 0.10, '뮤직버스': 0.05, '뮤직앤뉴': 0.10, '뮤직쥬엔터테인먼트': 0.35, '미디어신나라': 0.05, 
+    '미러볼뮤직': 0.10, '비스킷타운': 0.35, '사운드웨이브': 0.10, '샘에너지': 0.10, '서울미디어': 0.10, 
+    '세일뮤직': 0.10, '소니뮤직엔터테인먼트코리아': 0.05, '스타원엔터테인먼트': 0.35, '시샵코리아': 0.10, 
+    '씨덱스': 0.07, '씨앤엘뮤직': 0.10, '아울로스미디어': 0.05, '악당이반(주)': 0.35, '알레스뮤직': 0.07, 
+    '에스엘엘중앙': 0.10, '엔쓰리컴퍼니': 0.05, '엔에이치엔벅스': 0.15, '엘티씨': 0.35, '엠앤브이': 0.35, 
+    '엠투엠코리아(주)': 0.10, '엠피엠지뮤직': 0.35, '예전': 0.35, '와이드미디어': 0.20, '와이지플러스': 0.10, 
+    '와이지플러스(KOZ엔터)': 0.05, '와이지플러스(빅히트뮤직)': 0.05, '와이지플러스(쏘스뮤직)': 0.05, 
+    '와이지플러스(어도어)': 0.05, '와이지플러스(엔터)': 0.05, '와이지플러스(플레디스엔터)': 0.05, '와이지플러스(하이브)': 0.05, 
+    '워너뮤직코리아': 0.05, '원미디어': 0.35, '위드삼삼뮤직': 0.10, '유니버설뮤직': 0.10, '이든그루': 0.20, 
+    '이엔이미디어': 0.10, '인조인간': 0.35, '조은뮤직': 0.35, '주식회사 블렌딩': 0.10, '주식회사 에이스디지털미디어': 0.35, 
+    '지구레코드': 0.10, '카카오엔터테인먼트': 0.10, '케이티지니뮤직(KT)': 0.10, '케이티지니뮤직(씨제이-엠투엠)': 0.10, 
+    '콘텐츠코리아': 0.35, '쿼터뮤직': 0.10, '키드코리아': 0.35, '테이크원컴퍼니': 0.10, '포니캐년코리아': 0.10, 
+    '한이뮤직': 0.05, '해리슨앤컴퍼니': 0.20
+  };
+
+  const MANUAL_VENDORS = [
+    '카카오엔터테인먼트',
+    '케이티지니뮤직(씨제이-엠투엠)',
+    '드림어스컴퍼니',
+    '와이지플러스',
+    '와이지플러스(KOZ엔터)',
+    '와이지플러스(빅히트뮤직)',
+    '와이지플러스(쏘스뮤직)',
+    '와이지플러스(어도어)',
+    '와이지플러스(엔터)',
+    '와이지플러스(플레디스엔터)',
+    '와이지플러스(하이브)'
+  ];
+  
+  let allData = [];
+  let referenceMonths = [];
+  let manualVendorData = {}; // 수기거래처 데이터 {업체명: {월: {한도, 반품}}}
+
+  // ===== UI 함수 =====
+  function switchTab(n) {
+    document.querySelectorAll('[id^="tab-"]').forEach(t => t.style.display = 'none');
+    document.getElementById('tab-' + n).style.display = 'block';
+    
+    document.querySelectorAll('[id^="tab-btn-"]').forEach(b => {
+      b.style.color = '#999';
+      b.style.background = 'transparent';
+      b.style.borderBottom = 'none';
+      b.style.fontWeight = '500';
+    });
+    
+    const activeBtn = document.getElementById('tab-btn-' + n);
+    activeBtn.style.color = '#333';
+    activeBtn.style.background = '#f0f0f0';
+    activeBtn.style.borderBottom = '3px solid #333';
+    activeBtn.style.fontWeight = '600';
+  }
+
+  // ===== 수기거래처 폼 초기화 =====
+  // ===== 2단계: 수기거래처 엑셀 업로드 =====
+  function uploadManualVendorFile() {
+    const fileInput = document.getElementById('manual-vendor-file');
+    const file = fileInput.files[0];
+    
+    if (!file) {
+      alert('파일을 선택해주세요');
+      return;
+    }
+    
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+        const range = XLSX.utils.decode_range(worksheet['!ref']);
+        
+        // manualVendorData 초기화
+        manualVendorData = {};
+        
+        // 헤더 파싱 (행 1부터 시작, 첫 번째 열은 거래처명, 이후 YY.MM_한도, YY.MM_반품)
+        const headers = [];
+        for (let col = 1; col <= range.e.c; col++) {
+          const cell = worksheet[XLSX.utils.encode_cell({r: 0, c: col})];
+          if (cell) headers.push(cell.v);
+        }
+        
+        // 거래처별 데이터 파싱
+        for (let row = 1; row <= range.e.r; row++) {
+          const vendorCell = worksheet[XLSX.utils.encode_cell({r: row, c: 0})];
+          if (!vendorCell || !vendorCell.v) continue;
+          
+          const vendorName = String(vendorCell.v).trim();
+          manualVendorData[vendorName] = {};
+          
+          // 각 월별 데이터 파싱
+          for (let col = 1; col < headers.length; col += 2) {
+            const monthHeader = headers[col]; // YY.MM_한도
+            if (!monthHeader || !monthHeader.includes('_')) continue;
+            
+            // 월 이름 추출 (YY.MM)
+            const monthMatch = monthHeader.match(/(\d+\.\d+)_/);
+            if (!monthMatch) continue;
+            
+            const yearMonth = monthMatch[1]; // 25.12, 26.01 등
+            const [limitCell, returnCell] = [
+              worksheet[XLSX.utils.encode_cell({r: row, c: col})],
+              worksheet[XLSX.utils.encode_cell({r: row, c: col + 1})]
+            ];
+            
+            // 원 단위 그대로 저장 (자동거래처와 동일하게 원 단위 유지)
+            const limit = Math.round(parseFloat(limitCell?.v || 0) || 0);
+            const returnAmount = Math.round(parseFloat(returnCell?.v || 0) || 0);
+            
+            manualVendorData[vendorName][yearMonth] = {
+              limit: limit,
+              return: returnAmount
+            };
+          }
+        }
+        
+        // 성공 메시지
+        const statusDiv = document.getElementById('manual-upload-status');
+        const vendorCount = Object.keys(manualVendorData).length;
+        statusDiv.textContent = `✅ 업로드 완료! ${vendorCount}개 거래처 데이터 로드됨`;
+        statusDiv.style.display = 'block';
+        
+        console.log('manualVendorData:', manualVendorData);
+        
+      } catch (error) {
+        alert('파일 처리 중 오류가 발생했습니다: ' + error.message);
+        console.error(error);
+      }
+    };
+    
+    reader.readAsArrayBuffer(file);
+  }
+
+  // ===== 3단계: 반품진행률 현황 =====
+  // ===== 정렬 함수 =====
+  // ===== 반품불가업체 관리 함수 =====
+  function toggleUnavailableList() {
+    const listDiv = document.getElementById('unavailable-list');
+    const container = document.getElementById('unavailable-vendors-container');
+    
+    if (listDiv.style.display === 'none') {
+      // 리스트 보기
+      listDiv.style.display = 'block';
+      
+      // allData에서 거래처명 추출
+      const vendorList = [...new Set(allData.map(v => v.name))].filter(v => !v.includes('합계')).sort();
+      
+      container.innerHTML = vendorList.map(vendor => `
+        <label style="display: block; margin-bottom: 8px; cursor: pointer; font-size: 12px;">
+          <input type="checkbox" value="${vendor}" onchange="updateUnavailableList()" style="margin-right: 6px;" ${unavailableVendors.includes(vendor) ? 'checked' : ''}>
+          ${vendor}
+        </label>
+      `).join('');
+    } else {
+      // 리스트 숨기기
+      listDiv.style.display = 'none';
+    }
+  }
+
+  function updateUnavailableList() {
+    const checkboxes = document.querySelectorAll('#unavailable-vendors-container input[type="checkbox"]');
+    unavailableVendors = Array.from(checkboxes)
+      .filter(cb => cb.checked)
+      .map(cb => cb.value);
+    
+    document.getElementById('unavailable-count').textContent = unavailableVendors.length;
+  }
+
+  // ===== 비고 직접입력 함수 =====
+  function toggleRemarkInput(event) {
+    const selectEl = event.target;
+    const td = selectEl.parentElement;
+    const input = td.querySelector('.remark-input');
+    
+    if (selectEl.value === '직접입력') {
+      selectEl.style.display = 'none';
+      input.style.display = 'block';
+      input.focus();
+    } else {
+      selectEl.style.display = 'block';
+      input.style.display = 'none';
+      input.value = '';
+    }
+  }
+
+  // ===== 필터링 함수 =====
+  function filterByRisk(riskType) {
+    if (step3Results.length === 0) return;
+    
+    let filteredResults = step3Results;
+    
+    if (riskType !== 'all') {
+      filteredResults = step3Results.filter(item => {
+        const rate = parseFloat(item.rate);
+        if (riskType === 'normal') return rate >= 75;
+        if (riskType === 'watch') return rate >= 50 && rate < 75;
+        if (riskType === 'caution') return rate >= 25 && rate < 50;
+        if (riskType === 'risk') return rate < 25;
+        return true;
+      });
+    }
+    
+    // 테이블 재렌더링
+    const tbody = document.getElementById('tbody-step3');
+    tbody.innerHTML = '';
+    
+    filteredResults.forEach(item => {
+      const rate = parseFloat(item.rate);
+      let riskLevel = '';
+      let riskColor = '';
+      let bgColor = '';
+      
+      if (rate >= 75) {
+        riskLevel = '🟢 정상';
+        riskColor = '#388e3c';
+        bgColor = '#e8f5e9';
+      } else if (rate >= 50) {
+        riskLevel = '🟡 관심';
+        riskColor = '#fbc02d';
+        bgColor = '#fffde7';
+      } else if (rate >= 25) {
+        riskLevel = '🟠 주의';
+        riskColor = '#f57c00';
+        bgColor = '#fff3e0';
+      } else {
+        riskLevel = '🔴 위험';
+        riskColor = '#d32f2f';
+        bgColor = '#ffebee';
+      }
+      
+      const row = tbody.insertRow();
+      row.style.borderBottom = '1px solid #ddd';
+      row.style.backgroundColor = bgColor;
+      
+      row.innerHTML = `
+        <td style="padding: 10px; text-align: left;">${item.vendor}</td>
+        <td style="padding: 10px; text-align: right;">${Math.round(item.limit).toLocaleString()}</td>
+        <td style="padding: 10px; text-align: right;">${Math.round(item.returnAmount).toLocaleString()}</td>
+        <td style="padding: 10px; text-align: right;">${Math.round(item.limit - item.returnAmount).toLocaleString()}</td>
+        <td style="padding: 10px; text-align: right; color: ${riskColor}; font-weight: 600;">${item.rate.toFixed(1)}%</td>
+        <td style="padding: 10px; text-align: center; font-weight: 600; color: ${riskColor};">${riskLevel}</td>
+        <td style="padding: 10px; text-align: center;">
+          <input type="checkbox" class="regular-return-check" data-vendor="${item.vendor}" style="width: 18px; height: 18px; cursor: pointer;">
+        </td>
+        <td style="padding: 10px; text-align: center;">
+          <input type="checkbox" class="additional-return-check" data-vendor="${item.vendor}" style="width: 18px; height: 18px; cursor: pointer;">
+        </td>
+        <td style="padding: 10px; text-align: center;">
+          <select class="remark-select" data-vendor="${item.vendor}" onchange="toggleRemarkInput(event)" style="width: 100%; padding: 5px; border: 1px solid #ddd; border-radius: 4px; font-size: 12px;">
+            <option value="">선택</option>
+            <option value="반품한도금액부족">반품한도금액부족</option>
+            <option value="반품대상상품없음">반품대상상품없음</option>
+            <option value="구색상품(판매활성음반)유지">구색상품(판매활성음반)유지</option>
+            <option value="직접입력">직접입력</option>
+          </select>
+          <input type="text" class="remark-input" data-vendor="${item.vendor}" placeholder="여기에 입력" style="width: 100%; padding: 5px; border: 1px solid #ddd; border-radius: 4px; font-size: 12px; display: none; margin-top: 5px;">
+        </td>
+      `;
+    });
+
+    // ===== 필터링된 데이터 기반 통계 업데이트 =====
+    const filteredWithLimit = filteredResults.filter(item => item.limit > 0);
+    
+    // 진행거래처
+    const progressVendors = filteredWithLimit.length;
+    
+    // 위험도별 집계
+    const statNormal = filteredWithLimit.filter(item => item.rate >= 75).length;
+    const statWatch = filteredWithLimit.filter(item => item.rate >= 50 && item.rate < 75).length;
+    const statCaution = filteredWithLimit.filter(item => item.rate >= 25 && item.rate < 50).length;
+    const statRisk = filteredWithLimit.filter(item => item.rate < 25).length;
+    
+    // 최고/최저 진행률
+    let maxRate = 0, minRate = 101;
+    let maxVendors = [], minVendors = [];
+    
+    filteredWithLimit.forEach(item => {
+      const rate = parseFloat(item.rate);
+      if (rate > maxRate) {
+        maxRate = rate;
+        maxVendors = [item.vendor];
+      } else if (rate === maxRate) {
+        maxVendors.push(item.vendor);
+      }
+      
+      if (rate < minRate) {
+        minRate = rate;
+        minVendors = [item.vendor];
+      } else if (rate === minRate) {
+        minVendors.push(item.vendor);
+      }
+    });
+    
+    // 반품 미실행
+    const statNoReturn = filteredWithLimit.filter(item => item.returnAmount === 0).length;
+    
+    // 통계 카드 업데이트
+    document.getElementById('stat-total').textContent = progressVendors + '개';
+    document.getElementById('stat-normal').textContent = statNormal + '개';
+    document.getElementById('stat-watch').textContent = statWatch + '개';
+    document.getElementById('stat-caution').textContent = statCaution + '개';
+    document.getElementById('stat-risk').textContent = statRisk + '개';
+    
+    // 최고 진행률 표시
+    let maxText = '0% (-)';
+    if (maxRate > 0) {
+      if (maxVendors.length > 1) {
+        maxText = maxRate.toFixed(1) + '% (' + maxVendors[0] + ' 외 ' + (maxVendors.length - 1) + '개)';
+      } else {
+        maxText = maxRate.toFixed(1) + '% (' + maxVendors[0] + ')';
+      }
+    }
+    document.getElementById('stat-max-rate').textContent = maxText;
+    
+    // 최저 진행률 표시
+    let minText = '0% (-)';
+    if (minRate < 101) {
+      if (minVendors.length > 1) {
+        minText = minRate.toFixed(1) + '% (' + minVendors[0] + ' 외 ' + (minVendors.length - 1) + '개)';
+      } else {
+        minText = minRate.toFixed(1) + '% (' + minVendors[0] + ')';
+      }
+    }
+    document.getElementById('stat-min-rate').textContent = minText;
+    
+    document.getElementById('stat-no-return').textContent = statNoReturn + '개';
+
+    // ===== 위의 합계 통계 업데이트 =====
+    const totalLimit = filteredWithLimit.reduce((sum, item) => sum + item.limit, 0);
+    const totalReturn = filteredWithLimit.reduce((sum, item) => sum + item.returnAmount, 0);
+    const totalRate = totalLimit > 0 ? ((totalReturn / totalLimit) * 100).toFixed(1) : 0;
+    
+    document.getElementById('step3-total-limit').textContent = Math.round(totalLimit).toLocaleString();
+    document.getElementById('step3-total-return').textContent = Math.round(totalReturn).toLocaleString();
+    document.getElementById('step3-total-rate').textContent = totalRate + '%';
+  }
+
+  function sortTable(column) {
+    if (sortState.column === column) {
+      sortState.order = sortState.order === 'desc' ? 'asc' : 'desc';
+    } else {
+      sortState.column = column;
+      sortState.order = 'desc';
+    }
+    displayStep3();
+  }
+
+  function displayStep3() {
+    const selectedMonth = document.getElementById('step3-month').value;
+    
+    if (!selectedMonth) {
+      alert('기준년월을 선택하세요');
+      return;
+    }
+
+    step3Results = [];
+    
+    // 1. allData에서 해당 월의 데이터 조회 (수기거래처 제외!)
+    const monthIdx = referenceMonths.indexOf(selectedMonth);
+    if (monthIdx === -1) {
+      alert('해당 월 데이터를 찾을 수 없습니다');
+      return;
+    }
+
+    allData.forEach(vendor => {
+      // 수기거래처는 제외 + 합계 행 제외 + 반품불가업체 제외
+      if (MANUAL_VENDORS.includes(vendor.name) || vendor.name.includes('합계') || unavailableVendors.includes(vendor.name)) {
+        return;
+      }
+      
+      const prevIdx = monthIdx > 0 ? monthIdx - 1 : 0;
+      const prevPurchase = vendor[prevIdx]?.purchase || 0;
+      const prevReturn = vendor[prevIdx]?.return || 0;
+      const rate = RATE_DATA[vendor.name] || 0.10;
+      
+      // 특별 계산 규칙: (입하원가 - 입하반품원가) × 반품한도율
+      let limit = 0;
+      if (SPECIAL_DEDUCT_VENDORS.includes(vendor.name)) {
+        limit = Math.round((prevPurchase - prevReturn) * rate);
+      } else {
+        limit = Math.round(prevPurchase * rate);
+      }
+      
+      const returnAmount = Math.round(vendor[monthIdx]?.return || 0);
+      const returnRate = limit > 0 ? (returnAmount / limit * 100).toFixed(1) : 0;
+      
+      step3Results.push({
+        vendor: vendor.name,
+        limit: limit,
+        returnAmount: returnAmount,
+        rate: parseFloat(returnRate)
+      });
+    });
+
+    // 2. 수기거래처 데이터 추가 (업로드된 데이터 사용)
+    // selectedMonth를 YY.MM 형식으로 변환 (예: "25년12월" → "25.12", "26년1월" → "26.01")
+    const monthMatch = selectedMonth.match(/(\d+)년\s*(\d+)월/);
+    const yearMonth = monthMatch ? `${String(monthMatch[1]).slice(-2)}.${monthMatch[2].padStart(2, '0')}` : '';
+    
+    MANUAL_VENDORS.forEach(vendor => {
+      // 반품불가업체 제외
+      if (unavailableVendors.includes(vendor)) {
+        return;
+      }
+      
+      // manualVendorData에서 데이터 조회
+      if (manualVendorData[vendor] && manualVendorData[vendor][yearMonth]) {
+        const data = manualVendorData[vendor][yearMonth];
+        const limit = data.limit;
+        const returnAmount = data.return;
+        const rate = limit > 0 ? (returnAmount / limit * 100).toFixed(1) : 0;
+        
+        step3Results.push({
+          vendor: vendor,
+          limit: limit,
+          returnAmount: returnAmount,
+          rate: parseFloat(rate)
+        });
+      }
+    });
+
+    // 3. 정렬 (sortState에 따라)
+    const columnMap = {
+      'vendor': 'vendor',
+      'limit': 'limit',
+      'return': 'returnAmount',
+      'rate': 'rate'
+    };
+    
+    step3Results.sort((a, b) => {
+      let aVal, bVal;
+      if (sortState.column === 'remaining') {
+        aVal = a.limit - a.returnAmount;
+        bVal = b.limit - b.returnAmount;
+      } else {
+        const col = columnMap[sortState.column];
+        aVal = a[col];
+        bVal = b[col];
+      }
+      
+      let comparison = 0;
+      if (typeof aVal === 'number') {
+        comparison = aVal - bVal;
+      } else {
+        comparison = String(aVal).localeCompare(String(bVal));
+      }
+      
+      return sortState.order === 'desc' ? -comparison : comparison;
+    });
+    
+    // 4. 테이블 렌더링
+    const tbody = document.getElementById('tbody-step3');
+    tbody.innerHTML = '';
+    
+    let totalLimit = 0;
+    let totalReturn = 0;
+
+    step3Results.forEach(item => {
+      totalLimit += item.limit;
+      totalReturn += item.returnAmount;
+      
+      // 위험도 판정 (진행률 높을수록 좋음)
+      let riskLevel = '';
+      let riskColor = '';
+      let bgColor = '';
+      
+      if (item.rate >= 75) {
+        riskLevel = '🟢 정상';
+        riskColor = '#388e3c';
+        bgColor = '#e8f5e9';
+      } else if (item.rate >= 50) {
+        riskLevel = '🟡 관심';
+        riskColor = '#fbc02d';
+        bgColor = '#fffde7';
+      } else if (item.rate >= 25) {
+        riskLevel = '🟠 주의';
+        riskColor = '#f57c00';
+        bgColor = '#fff3e0';
+      } else {
+        riskLevel = '🔴 위험';
+        riskColor = '#d32f2f';
+        bgColor = '#ffebee';
+      }
+      
+      const row = tbody.insertRow();
+      row.style.borderBottom = '1px solid #ddd';
+      row.style.backgroundColor = bgColor;
+      
+      row.innerHTML = `
+        <td style="padding: 10px; text-align: left;">${item.vendor}</td>
+        <td style="padding: 10px; text-align: right;">${Math.round(item.limit).toLocaleString()}</td>
+        <td style="padding: 10px; text-align: right;">${Math.round(item.returnAmount).toLocaleString()}</td>
+        <td style="padding: 10px; text-align: right;">${Math.round(item.limit - item.returnAmount).toLocaleString()}</td>
+        <td style="padding: 10px; text-align: right; color: ${riskColor}; font-weight: 600;">${item.rate.toFixed(1)}%</td>
+        <td style="padding: 10px; text-align: center; font-weight: 600; color: ${riskColor};">${riskLevel}</td>
+        <td style="padding: 10px; text-align: center;">
+          <input type="checkbox" class="regular-return-check" data-vendor="${item.vendor}" style="width: 18px; height: 18px; cursor: pointer;">
+        </td>
+        <td style="padding: 10px; text-align: center;">
+          <input type="checkbox" class="additional-return-check" data-vendor="${item.vendor}" style="width: 18px; height: 18px; cursor: pointer;">
+        </td>
+        <td style="padding: 10px; text-align: center;">
+          <select class="remark-select" data-vendor="${item.vendor}" onchange="toggleRemarkInput(event)" style="width: 100%; padding: 5px; border: 1px solid #ddd; border-radius: 4px; font-size: 12px;">
+            <option value="">선택</option>
+            <option value="반품한도금액부족">반품한도금액부족</option>
+            <option value="반품대상상품없음">반품대상상품없음</option>
+            <option value="구색상품(판매활성음반)유지">구색상품(판매활성음반)유지</option>
+            <option value="직접입력">직접입력</option>
+          </select>
+          <input type="text" class="remark-input" data-vendor="${item.vendor}" placeholder="여기에 입력" style="width: 100%; padding: 5px; border: 1px solid #ddd; border-radius: 4px; font-size: 12px; display: none; margin-top: 5px;">
+        </td>
+      `;
+    });
+
+    // 5. 대시보드 업데이트
+    const totalRate = totalLimit > 0 ? (totalReturn / totalLimit * 100).toFixed(1) : 0;
+    
+    document.getElementById('step3-total-limit').textContent = Math.round(totalLimit).toLocaleString();
+    document.getElementById('step3-total-return').textContent = Math.round(totalReturn).toLocaleString();
+    document.getElementById('step3-total-rate').textContent = totalRate + '%';
+
+    // 6. 요약 통계 계산
+    let statNormal = 0;    // ≥75%
+    let statWatch = 0;     // 50-75%
+    let statCaution = 0;   // 25-50%
+    let statRisk = 0;      // <25%
+    let statTotal = 0;     // 진행거래처 (반품한도액 > 0)
+    let statNoReturn = 0;  // 반품 미실행 (한도액 > 0 && 실제반품 = 0)
+    let sumRate = 0;
+    let maxRate = -1;
+    let maxVendors = [];
+    let minRate = 101;
+    let minVendors = [];
+
+    step3Results.forEach(item => {
+      const rate = parseFloat(item.rate);
+      
+      // 진행거래처 (반품한도액 > 0)
+      if (item.limit > 0) {
+        statTotal++;
+        
+        // 반품 미실행 (한도액 > 0 && 반품금액 = 0)
+        if (item.returnAmount === 0) {
+          statNoReturn++;
+        }
+        
+        // 위험도 카운팅 (진행거래처만)
+        if (rate >= 75) statNormal++;
+        else if (rate >= 50) statWatch++;
+        else if (rate >= 25) statCaution++;
+        else statRisk++;
+      }
+      
+      sumRate += rate;
+      
+      // 최고 진행률
+      if (rate > maxRate) {
+        maxRate = rate;
+        maxVendors = [item.vendor];
+      } else if (rate === maxRate) {
+        maxVendors.push(item.vendor);
+      }
+      
+      // 최저 진행률
+      if (rate < minRate) {
+        minRate = rate;
+        minVendors = [item.vendor];
+      } else if (rate === minRate) {
+        minVendors.push(item.vendor);
+      }
+    });
+
+    document.getElementById('stat-total').textContent = statTotal;
+    document.getElementById('stat-normal').textContent = statNormal;
+    document.getElementById('stat-watch').textContent = statWatch;
+    document.getElementById('stat-caution').textContent = statCaution;
+    document.getElementById('stat-risk').textContent = statRisk;
+    
+    // 최고 진행률 표시 (동률 처리)
+    let maxText = '0% (-)';
+    if (maxRate > 0) {
+      if (maxVendors.length > 1) {
+        maxText = maxRate.toFixed(1) + '% (' + maxVendors[0] + ' 외 ' + (maxVendors.length - 1) + '개)';
+      } else {
+        maxText = maxRate.toFixed(1) + '% (' + maxVendors[0] + ')';
+      }
+    }
+    document.getElementById('stat-max-rate').textContent = maxText;
+    
+    // 최저 진행률 표시 (동률 처리)
+    let minText = '0% (-)';
+    if (minRate < 101) {
+      if (minVendors.length > 1) {
+        minText = minRate.toFixed(1) + '% (' + minVendors[0] + ' 외 ' + (minVendors.length - 1) + '개)';
+      } else {
+        minText = minRate.toFixed(1) + '% (' + minVendors[0] + ')';
+      }
+    }
+    document.getElementById('stat-min-rate').textContent = minText;
+    
+    document.getElementById('stat-no-return').textContent = statNoReturn + '개';
+  }
+
+  // ===== 파일 로드 =====
+  function loadFile() {
+    const file = document.getElementById('file-input').files[0];
+    if (!file) {
+      alert('파일을 선택하세요');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const workbook = XLSX.read(e.target.result, { type: 'array' });
+        const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+        const range = XLSX.utils.decode_range(worksheet['!ref']);
+        
+        // 행 3에서 기준년월 추출
+        referenceMonths = [];
+        let col = 1;
+        while (col <= range.e.c) {
+          const monthCell = worksheet[XLSX.utils.encode_cell({r: 2, c: col})];
+          if (!monthCell || !monthCell.v) break;
+          
+          const monthValue = String(monthCell.v).trim();
+          if (!referenceMonths.includes(monthValue)) {
+            referenceMonths.push(monthValue);
+          }
+          
+          col += 2; // 입하원가, 반품원가 2개씩
+        }
+
+        // 기준년월 드롭다운 업데이트
+        const step3MonthSelect = document.getElementById('step3-month');
+        step3MonthSelect.innerHTML = '<option value="">선택하세요</option>';
+        referenceMonths.forEach((month, idx) => {
+          const option = document.createElement('option');
+          option.value = month;
+          option.textContent = month;
+          if (idx === referenceMonths.length - 1) option.selected = true;
+          step3MonthSelect.appendChild(option);
+        });
+        
+        // allData 구성
+        allData = [];
+        for (let row = 4; row <= range.e.r; row++) {
+          const vendorCell = worksheet[XLSX.utils.encode_cell({r: row, c: 0})];
+          if (vendorCell && vendorCell.v) {
+            const rowData = { name: String(vendorCell.v).trim() };
+            for (let idx = 0; idx < referenceMonths.length; idx++) {
+              const col1 = 1 + idx * 2;
+              const col2 = 2 + idx * 2;
+              const purchaseCell = worksheet[XLSX.utils.encode_cell({r: row, c: col1})];
+              const returnCell = worksheet[XLSX.utils.encode_cell({r: row, c: col2})];
+              rowData[idx] = { 
+                purchase: parseFloat(purchaseCell?.v || 0), 
+                return: parseFloat(returnCell?.v || 0) 
+              };
+            }
+            allData.push(rowData);
+          }
+        }
+
+        document.getElementById('vendor-count').textContent = allData.length;
+        document.getElementById('step1-status').style.display = 'block';
+        
+        switchTab(2);
+      } catch (error) {
+        alert('파일 로드 중 오류가 발생했습니다: ' + error.message);
+      }
+    };
+    reader.readAsArrayBuffer(file);
+  }
+</script>
+
+</body>
+</html>
