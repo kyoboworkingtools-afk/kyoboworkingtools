@@ -1493,7 +1493,7 @@ function openTool(id){
 function closeViewer(){document.getElementById('toolViewer').classList.remove('open');document.getElementById('tvIframe').src='';}
 
 function renderTasksPage(){
-  const main = document.getElementById('main-content');
+  const main = document.getElementById('mainArea');
   main.innerHTML = '';
   fetch('tasks.html')
     .then(r => r.text())
